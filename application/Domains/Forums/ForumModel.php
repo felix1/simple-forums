@@ -12,7 +12,7 @@ class ForumModel extends Model
 	protected $table      = 'forums';
 	protected $primaryKey = 'id';
 
-	protected $returnType     = ForumModel::class;
+	protected $returnType     = 'App\Domains\Forums\Forum';
 	protected $useSoftDeletes = false;
 
 	protected $allowedFields = ['forum_id', 'name', 'description', 'is_category', 'thread_count', 'post_count', 'last_post', 'deleted_at'];
@@ -78,7 +78,6 @@ class ForumModel extends Model
 		{
 			$catIDs[] = $category->id;
 		}
-		$catIDs = implode([',', $catIDs]);
 
 		// Get the forums for all of our categories
 		$forums = $this->whereIn('forum_id', $catIDs)->findAll();
