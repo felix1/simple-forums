@@ -56,6 +56,9 @@ $routes->post('login', 'Auth::attemptLogin');
 $routes->get('register', 'Auth::register');
 $routes->post('register', 'Auth::doRegister');
 
+// Forums
+$routes->get('categories', 'CategoryController::index');
+
 /**
  * --------------------------------------------------------------------
  * Additional Routing

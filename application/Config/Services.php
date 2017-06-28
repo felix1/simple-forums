@@ -20,15 +20,4 @@ require_once BASEPATH.'Config/Services.php';
 class Services extends CoreServices
 {
 
-//    public static function example($getShared = true)
-//    {
-//        if ($getShared)
-//        {
-//            return self::getSharedInstance('example');
-//        }
-//
-//        return new \CodeIgniter\Example();
-//    }
-
-
 }

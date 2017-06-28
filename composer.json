@@ -17,17 +17,14 @@
 	},
 	"require": {
 		"php": ">=7.0",
-		"zendframework/zend-escaper": "^2.5"
+		"fzaninotto/faker": "^1.6"
 	},
 	"require-dev": {
-		"phpunit/phpunit": "^6.0",
-		"mikey179/vfsStream": "1.6.*",
-		"satooshi/php-coveralls": "^1.0"
+		"phpunit/phpunit": "^6.0"
 	},
 	"scripts": {
 		"post-update-cmd": [
-			"composer dump-autoload",
-			"CodeIgniter\\ComposerScripts::postUpdate"
+			"composer dump-autoload"
 		]
 	}
 }

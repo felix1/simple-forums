@@ -50,10 +50,11 @@ class Autoload extends \CodeIgniter\Config\AutoloadConfig
 		 *   `];
 		 */
 		$psr4 = [
-			'Config'                     => APPPATH.'Config',
-			APP_NAMESPACE                => APPPATH,			    // For custom namespace
-			'App'                        => APPPATH,			    // To ensure filters, etc still found,
-			'Tests\Support'              => TESTPATH.'_support',    // So custom migrations can run during testing
+			'Config'                    => APPPATH.'Config',
+			APP_NAMESPACE               => APPPATH,			    // For custom namespace
+			'App'                       => APPPATH,			    // To ensure filters, etc still found,
+			'Tests\Support'             => TESTPATH.'_support',    // So custom migrations can run during testing
+			'Vulcan'                    => ROOTPATH.'../vulcan'     // For personal development use
 		];
 
 		/**
