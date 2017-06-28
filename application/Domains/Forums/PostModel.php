@@ -12,7 +12,7 @@ class PostModel extends Model
 	protected $table      = 'posts';
 	protected $primaryKey = 'id';
 
-	protected $returnType     = 'array';
+	protected $returnType     = 'App\Domains\Forums\Post';
 	protected $useSoftDeletes = false;
 
 	protected $allowedFields = ['forum_id', 'thread_id', 'user_id', 'title', 'body', 'deleted_at'];

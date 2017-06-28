@@ -12,7 +12,7 @@ class ThreadModel extends Model
 	protected $table      = 'threads';
 	protected $primaryKey = 'id';
 
-	protected $returnType     = 'array';
+	protected $returnType     = 'App\Domains\Forums\Thread';
 	protected $useSoftDeletes = false;
 
 	protected $allowedFields = ['user_id', 'forum_id', 'title', 'first_post', 'views', 'post_count', 'deleted_at'];
