@@ -57,7 +57,10 @@ $routes->get('register', 'Auth::register');
 $routes->post('register', 'Auth::doRegister');
 
 // Forums
-$routes->get('categories', 'CategoryController::index');
+$routes->get('categories', 'ForumController::showCategories');
+$routes->get('recent', 'ForumController::showRecent');
+$routes->get('forums/(:num)', 'ForumController::showForum/$1', ['as' => 'forumLink']);
+$routes->get('topic/(:num)', 'ForumController::showThread/$1', ['as' => 'threadLink']);
 
 /**
  * --------------------------------------------------------------------

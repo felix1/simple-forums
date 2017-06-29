@@ -20,11 +20,13 @@ class BaseController extends Controller
         return $this;
     }
 
-    public function render(string $view)
+    public function render(string $view, array $data=null)
     {
-        $content = view($view, $this->data);
+    	$data = array_merge($data, $this->data);
 
-        $layout = view('layouts/'.$this->layout, $this->data);
+        $content = view($view, $data);
+
+        $layout = view('layouts/'.$this->layout, $data);
         $layout = str_replace('{content}', $content, $layout);
 
         echo $layout;

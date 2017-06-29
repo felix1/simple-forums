@@ -43,4 +43,14 @@ class Thread extends Entity
 	 */
 	protected $datamap = [];
 
+	/**
+	 * Generates a link to the thread-specific page.
+	 *
+	 * @return \CodeIgniter\Router\string|string
+	 */
+	public function link()
+	{
+		return route_to('threadLink', $this->id);
+	}
+
 }

@@ -1,6 +1,7 @@
 <?php namespace App\Domains\Forums;
 
 use CodeIgniter\Model;
+use Tests\Support\Models\UserModel;
 
 /**
  * ThreadModel Model
@@ -37,4 +38,57 @@ class ThreadModel extends Model
 	];
 	protected $validationMessages = [];
 	protected $skipValidation     = false;
+
+	/**
+	 * Returns the total number of non-deleted
+	 * threads in the system.
+	 *
+	 * @return int
+	 */
+	public function totalThreads(): int
+	{
+		return $this->builder()->where('deleted_at IS NULL')->countAllResults();
+	}
+
+	/**
+	 * Populates the posts for all threads provided
+	 * to skip the N+1 problem.
+	 *
+	 * @param array $threads
+	 *
+	 * @return array
+	 */
+	public function fillPostsIntoThreads(array $threads = [])
+	{
+		if (empty($threads)) return $threads;
+
+		$postModel = new PostModel();
+
+		// Rebuild the array so that the keys are the thread id for easier forum assignment.
+		$newThreads = [];
+		foreach ($threads as $thread)
+		{
+			$newThreads[$thread->id] = $thread;
+		}
+		$threads = $newThreads;
+		unset($newThreads);
+
+		// Get a list of thread ids
+		$threadIDs = [];
+		foreach ($threads as $thread)
+		{
+			$threadIDs[] = $thread->id;
+		}
+
+		// Get the posts for all of our categories
+		$posts = $postModel->whereIn('thread_id', $threadIDs)->findAll();
+
+		foreach ($posts as $post)
+		{
+			$threads[$post->thread_id]->posts[$post->id] = $post;
+		}
+
+		return $threads;
+	}
+
 }

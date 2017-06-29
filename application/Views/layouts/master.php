@@ -15,6 +15,7 @@
 <?= view('layouts/_navbar') ?>
 
     <div class="container">
+        <br>
         {content}
     </div>
 

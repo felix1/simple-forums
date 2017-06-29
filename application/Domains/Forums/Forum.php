@@ -66,4 +66,13 @@ class Forum extends Entity
 		return (bool)$this->is_category;
 	}
 
+	/**
+	 * Returns a full URL to the forum's main page.
+	 */
+	public function link()
+	{
+		return route_to('forumLink', $this->id);
+	}
+
+
 }
