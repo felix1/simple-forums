@@ -39,6 +39,7 @@ $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
 $routes->set404Override();
 $routes->setAutoRoute(false);
+$routes->discoverLocal(true);
 
 /**
  * --------------------------------------------------------------------
@@ -79,3 +80,14 @@ if (file_exists(APPPATH.'Config/'.ENVIRONMENT.'/Routes.php'))
 {
 	require APPPATH.'Config/'.ENVIRONMENT.'/Routes.php';
 }
+
+/**
+ * --------------------------------------------------------------------
+ * Module Routing
+ * --------------------------------------------------------------------
+ *
+ * These are listed here simply to make it easier to locate
+ * if you're trying to find some routes.
+ *
+ *  - myth/Auth/Config/Routes.php
+ */
