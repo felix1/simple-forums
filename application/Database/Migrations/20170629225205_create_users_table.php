@@ -14,12 +14,13 @@ class Migration_create_users_table extends Migration
 			'password_hash'    => ['type' => 'varchar', 'constraint' => 255],
 			'reset_hash'       => ['type' => 'varchar', 'constraint' => 40, 'null' => true],
 			'activate_hash'    => ['type' => 'varchar', 'constraint' => 40, 'null' => true],
-			'created_on'       => ['type' => 'datetime', 'default' => '0000-00-00 00:00:00'],
 			'status'           => ['type' => 'varchar', 'constraint' => 255, 'null' => true],
 			'status_message'   => ['type' => 'varchar', 'constraint' => 255, 'null' => true],
 			'active'           => ['type' => 'tinyint', 'constraint' => 1, 'null' => 0, 'default' => 0],
-			'deleted'          => ['type' => 'tinyint', 'constraint' => 1, 'null' => 0, 'default' => 0],
 			'force_pass_reset' => ['type' => 'tinyint', 'constraint' => 1, 'null' => 0, 'default' => 0],
+			'deleted'          => ['type' => 'tinyint', 'constraint' => 1, 'null' => 0, 'default' => 0],
+			'created_at'       => ['type' => 'datetime', 'null' => true],
+			'updated_at'       => ['type' => 'datetime', 'null' => true],
 		]);
 
 		$this->forge->addKey('id', true);

@@ -1,5 +1,7 @@
 <?php namespace Config;
 
+use Myth\Auth\AuthValidationRules;
+
 class Validation
 {
 	//--------------------------------------------------------------------
@@ -17,6 +19,7 @@ class Validation
 		\CodeIgniter\Validation\FormatRules::class,
 		\CodeIgniter\Validation\FileRules::class,
 		\CodeIgniter\Validation\CreditCardRules::class,
+		AuthValidationRules::class
 	];
 
 	/**

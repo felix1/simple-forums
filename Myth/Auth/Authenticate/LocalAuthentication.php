@@ -29,6 +29,11 @@
  * @link        http://sprintphp.com
  * @since       Version 1.0
  */
+use App\Domains\Users\User;
+use App\Domains\Users\UserModel;
+use Config\Services;
+use CodeIgniter\Events\Events;
+use Myth\Auth\Models\LoginModel;
 
 /**
  * Class LocalAuthentication
@@ -49,11 +54,19 @@
  */
 class LocalAuthentication implements AuthenticateInterface
 {
-    protected $user = null;
+    protected $user;
 
-    public $userModel = null;
+	/**
+	 * @var \App\Domains\Users\UserModel
+	 */
+    public $userModel;
 
-    public $error = null;
+	/**
+	 * @var \Myth\Auth\Models\LoginModel
+	 */
+    public $loginModel;
+
+    public $error;
 
 	/**
 	 * @var \Myth\Auth\Config\Auth
@@ -62,9 +75,11 @@ class LocalAuthentication implements AuthenticateInterface
 
     //--------------------------------------------------------------------
 
-    public function __construct($config)
+    public function __construct($config, UserModel $userModel, LoginModel $loginModel)
     {
     	$this->config = $config;
+    	$this->userModel = $userModel;
+    	$this->loginModel = $loginModel;
 
     	// Ensure session is running
 		session()->start();
@@ -136,7 +151,7 @@ class LocalAuthentication implements AuthenticateInterface
         }
 
         // Ensure that the fields are allowed validation fields
-        if (! in_array(key($credentials), config_item('auth.valid_fields')) )
+        if (! in_array(key($credentials), $this->config->validFields) )
         {
             $this->error = lang('auth.invalid_credentials');
             return false;
@@ -150,24 +165,12 @@ class LocalAuthentication implements AuthenticateInterface
         }
 
         // Can we find a user with those credentials?
-        $user = $this->userModel->as_array()
+        $user = $this->userModel->asArray()
                                 ->where($credentials)
                                 ->first();
 
-        // If the user is throttled due to too many invalid logins
-        // or the system is under attack, kick them back.
-
-        // If throttling time is above zero, we can't allow
-        // logins now.
-        $time = (int)$this->isThrottled($user);
-        if ($time > 0)
-        {
-            $this->error = sprintf(lang('auth.throttled'), $time);
-            return false;
-        }
-
         // Get ip address
-        $ip_address = $this->ci->input->ip_address();
+        $ip_address = Services::request()->getIPAddress();
 
         if (! $user)
         {
@@ -292,12 +295,12 @@ class LocalAuthentication implements AuthenticateInterface
      */
     public function viaRemember()
     {
-        if (! config_item('auth.allow_remembering'))
+        if (! $this->config->allowRemembering)
         {
             return false;
         }
 
-        $this->ci->load->helper('cookie');
+        helper('cookie');
 
         if (! $token = get_cookie('remember'))
         {
@@ -305,8 +308,9 @@ class LocalAuthentication implements AuthenticateInterface
         }
 
         // Attempt to match the token against our auth_tokens table.
-        $query = $this->ci->db->where('hash', $this->ci->login_model->hashRememberToken($token))
-                              ->get('auth_tokens');
+        $query = $this->userModel->db
+	        ->where('hash', $this->ci->login_model->hashRememberToken($token))
+	        ->get('auth_tokens');
 
         if (! $query->num_rows())
         {
@@ -333,44 +337,40 @@ class LocalAuthentication implements AuthenticateInterface
     /**
      * Registers a new user and handles activation method.
      *
-     * @param $user_data
+     * @param User $user
+     *
      * @return bool
      */
-    public function registerUser($user_data)
+    public function registerUser($user)
     {
         // Anything special needed for Activation?
-        $method = config_item('auth.activation_method');
+        $method = $this->config->activationMethod;
 
-        $user_data['active'] = $method == 'auto' ? 1 : 0;
+	    $user->active = $method == 'auto' ? 1 : 0;
 
         // If via email, we need to generate a hash
-        $this->ci->load->helper('string');
-        $token = random_string('alnum', 24);
-        $user_data['activate_hash'] = hash('sha1', config_item('auth.salt') . $token);
-
-        // Email should NOT be case sensitive.
-        if (! empty($user_data['email']))
-        {
-            $user_data['email'] = strtolower($user_data['email']);
-        }
+        helper('text');
+        $token                     = random_string('alnum', 24);
+	    $user->activate_hash = hash('sha1', $this->config->salt.$token);
 
         // Save the user
-        if (! $id = $this->userModel->insert($user_data))
+        if (! $id = $this->userModel->insert($user))
         {
             $this->error = $this->userModel->error();
             return false;
         }
 
+        $user->id = $id;
+
         $data = [
-            'user_id' => $id,
-            'email'   => $user_data['email'],
+            'user'    => $user,
             'token'   => $token,
             'method'  => $method
         ];
 
         Events::trigger('didRegisterUser', [$data]);
 
-        return true;
+        return $user;
     }
 
     //--------------------------------------------------------------------
@@ -740,11 +740,6 @@ class LocalAuthentication implements AuthenticateInterface
 
     public function error()
     {
-        if (validation_errors())
-        {
-            return validation_errors();
-        }
-
         return $this->error;
     }
 

@@ -1,75 +1,23 @@
 <?php namespace Myth\Auth\Authorize;
-/**
- * Sprint
- *
- * A set of power tools to enhance the CodeIgniter framework and provide consistent workflow.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * @package     Sprint
- * @author      Lonnie Ezell
- * @copyright   Copyright 2014-2015, New Myth Media, LLC (http://newmythmedia.com)
- * @license     http://opensource.org/licenses/MIT  (MIT)
- * @link        http://sprintphp.com
- * @since       Version 1.0
- */
 
-use Myth\Models\CIDbModel;
+use CodeIgniter\Model;
 
-class FlatGroupsModel extends CIDbModel {
+class FlatGroupsModel extends Model {
 
-	protected $table_name = 'auth_groups';
+	protected $table      = 'auth_groups';
+	protected $primaryKey = 'id';
 
-	protected $soft_deletes = false;
+	protected $returnType = 'array';
 
-	protected $set_created = false;
+	protected $useSoftDeletes = false;
+	protected $useTimestamps = false;
 
-	protected $set_modified = false;
+	protected $allowedFields = ['name', 'description'];
 
-	protected $protected_attributes = ['id', 'submit'];
-
-	protected $validation_rules = [
-		[
-			'field' => 'name',
-			'label' => 'Name',
-			'rules' => 'trim|max_length[255]'
-		],
-		[
-			'field' => 'description',
-			'label' => 'Description',
-			'rules' => 'trim|max_length[255]'
-		],
+	protected $validationRules = [
+		'name'  => 'required|min_length[3]|max_length[255]|is_unique[auth_groups.name]',
+		'description' => 'max_length[255]'
 	];
-
-	protected $insert_validate_rules = [
-		'name'      => 'required|is_unique[auth_groups.name]'
-	];
-
-	protected $before_insert = [];
-	protected $before_update = [];
-	protected $after_insert  = [];
-	protected $after_update  = [];
-
-
-	protected $fields = [];
-
-	//--------------------------------------------------------------------
 
 	//--------------------------------------------------------------------
 	// Users
@@ -105,7 +53,7 @@ class FlatGroupsModel extends CIDbModel {
 	 */
 	public function removeUserFromGroup($user_id, $group_id)
 	{
-	    return $this->where([
+	    return $this->db->where([
 		    'user_id' => (int)$user_id,
 		    'group_id' => (int)$group_id
 	    ])->delete('auth_groups_users');
@@ -137,15 +85,14 @@ class FlatGroupsModel extends CIDbModel {
 	 */
 	public function getGroupsForUser($user_id)
 	{
-	    return $this->select('auth_groups_users.*, auth_groups.name, auth_groups.description')
+	    return $this->db->select('auth_groups_users.*, auth_groups.name, auth_groups.description')
 		            ->join('auth_groups_users', 'auth_groups_users.group_id = auth_groups.id', 'left')
 		            ->where('user_id', $user_id)
-		            ->as_array()
+		            ->asArray()
 		            ->find_all();
 	}
 
 	//--------------------------------------------------------------------
-
 
 
 

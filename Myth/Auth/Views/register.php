@@ -1,4 +1,4 @@
-<form action="<?= current_url() ?>" id="join_form">
+<form action="<?= current_url() ?>" id="join_form" method="post">
     <?= csrf_field() ?>
 
     <h2 class="text-center"><?= lang('auth.register') ?></h2>

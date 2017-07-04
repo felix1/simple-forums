@@ -9,11 +9,14 @@ class Migration_create_auth_tables extends Migration
 		// Auth Login Attempts
 		$this->forge->addField([
 			'id'       => ['type' => 'int', 'constraint' => 11, 'unsigned' => true, 'auto_increment' => true],
-			'email'    => ['type' => 'varchar', 'constraint' => 255,],
+			'type' => ['type' => 'varchar', 'constraint' => 64, 'null' => false, 'default' => 'app', 'after' => 'id'],
+			'ip_address' => ['type' => 'varchar', 'constraint' => 255, 'null' => true, 'after' => 'type'],
+			'user_id' => ['type' => 'int', 'constraint' => 11, 'unsigned' => true, 'null' => true, 'after' => 'ip_address'],
 			'datetime' => ['type' => 'datetime'],
 		]);
 		$this->forge->addKey('id', true);
 		$this->forge->addKey('email');
+		$this->forge->addKey('user_id');
 
 		$this->forge->createTable('auth_login_attempts', true);
 

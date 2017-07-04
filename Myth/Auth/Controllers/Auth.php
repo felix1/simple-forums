@@ -1,18 +1,26 @@
 <?php namespace Myth\Auth\Controllers;
 
-use App\Models\UserModel;
+use App\Domains\Users\User;
+use App\Domains\Users\UserModel;
 use App\Controllers\BaseController;
 use \Myth\Auth\Authenticate\LocalAuthentication;
+use Myth\Auth\Models\LoginModel;
 
 class Auth extends BaseController
 {
 	protected $config;
+
+	/**
+	 * @var LocalAuthentication
+	 */
+	protected $auth;
 
     public function __construct(...$params)
     {
         parent::__construct(...$params);
 
         $this->config = new \Myth\Auth\Config\Auth;
+        $this->auth = new LocalAuthentication($this->config, new UserModel(), new LoginModel());
     }
 
     //--------------------------------------------------------------------
@@ -21,13 +29,10 @@ class Auth extends BaseController
     {
         helper('form');
 
-        $auth = new LocalAuthentication($this->config);
-        $auth->useModel(new UserModel());
-
         $redirectURL = session('redirect_url');
 
         // No need to login again if they are already logged in...
-        if ($auth->isLoggedIn())
+        if ($this->auth->isLoggedIn())
         {
             unset($_SESSION['redirect_url']);
             redirect($redirectURL);
@@ -41,21 +46,19 @@ class Auth extends BaseController
 
 	public function attemptLogin()
 	{
-		$auth = new LocalAuthentication($this->config);
-		$auth->useModel(new UserModel());
 		$redirectURL = session('redirect_url');
 
 		$post_data = [
-			'email'    => $this->input->post('email'),
-			'password' => $this->input->post('password')
+			'email'    => $this->request->getVar('email'),
+			'password' => $this->request->getVar('password')
 		];
 
-		$remember = (bool)$this->input->post('remember');
+		$remember = (bool)$this->request->getVar('remember');
 
-		if ($auth->login($post_data, $remember))
+		if ($this->auth->login($post_data, $remember))
 		{
 			// Is the user being forced to reset their password?
-			if ($auth->user()['force_pass_reset'] == 1)
+			if ($this->auth->user()['force_pass_reset'] == 1)
 			{
 				redirect('change_pass');
 			}
@@ -74,12 +77,9 @@ class Auth extends BaseController
 
 	public function logout()
     {
-	    $auth = new LocalAuthentication($this->config);
-	    $auth->useModel(new UserModel());
-
-        if ($auth->isLoggedIn())
+        if ($this->auth->isLoggedIn())
         {
-            $auth->logout();
+            $this->auth->logout();
 
             $this->setMessage(lang('auth.did_logout'), 'success');
         }
@@ -103,134 +103,134 @@ class Auth extends BaseController
 
 	public function attemptRegister()
 	{
+		if (! $this->validate([
+			'first_name' => 'required|min_length[2]|max_length[255]',
+			'last_name' => 'required|min_length[2]|max_length[255]',
+			'email' => 'required|valid_email|max_length[255]|is_unique[users.email]',
+			'username' => 'required|min_length[5]|max_length[255]|is_unique[users.username]',
+			'password' => 'required|min_length[8]|max_length[255]|strong_password',
+			'pass_confirm' => 'required|matches[password]'
+		]))
+		{
+			redirect_with_input('register');
+		};
+
 		helper('form');
 
-		$auth = new LocalAuthentication($this->config);
-		$auth->useModel(new UserModel());
+		$user = new User([
+			'first_name'   => $this->request->getPost('first_name'),
+			'last_name'    => $this->request->getPost('last_name'),
+			'email'        => $this->request->getPost('email'),
+			'username'     => $this->request->getPost('username'),
+			'password'     => $this->request->getPost('password'),
+		]);
 
-		$postData = [
-			'first_name'   => $this->input->post('first_name'),
-			'last_name'    => $this->input->post('last_name'),
-			'email'        => $this->input->post('email'),
-			'username'     => $this->input->post('username'),
-			'password'     => $this->input->post('password'),
-			'pass_confirm' => $this->input->post('pass_confirm')
-		];
+		$user = $this->auth->registerUser($user);
 
-		if ($auth->registerUser($postData))
+		if (! empty($user))
 		{
-			$this->setMessage(lang('auth.did_register'), 'success');
+			$this->setMessage(lang('Auth.didRegister'), 'success');
 			redirect('login');
 		}
 
-		$this->setMessage($auth->error(), 'danger');
+		$user->addToGroup($this->config->defaultGroup);
+
+		$this->setMessage($this->auth->error(), 'danger');
 		redirect_with_input('register');
 	}
 
 	//--------------------------------------------------------------------
 
-    public function activate_user()
+    public function activateUser()
     {
-        $this->load->helper('form');
+        helper('form');
 
-        if ($this->input->post())
+        if ($this->request->getMethod() === 'post')
         {
-            $auth = new LocalAuthentication();
-            $this->load->model('user_model');
-            $auth->useModel($this->user_model);
-
             $post_data = [
-                  'email' => $this->input->post('email'),
-                  'code'  => $this->input->post('code')
+                  'email' => $this->request->getPost('email'),
+                  'code'  => $this->request->getPost('code')
             ];
 
-            if ($auth->activateUser($post_data))
+            if ($this->auth->activateUser($post_data))
             {
                 $this->setMessage(lang('auth.did_activate'), 'success');
                 redirect( Route::named('login') );
             }
             else
             {
-                $this->setMessage($auth->error(), 'danger');
+                $this->setMessage($this->auth->error(), 'danger');
             }
         }
 
         $data = [
-            'email' => $this->input->get('e'),
-            'code'  => $this->input->get('code')
+            'email' => $this->request->getPost('e'),
+            'code'  => $this->request->getPost('code')
         ];
 
-        $this->themer->setLayout('login');
-        $this->render($data);
+        $this->layout = 'login';
+        $this->render('Myth\Auth\Views\activate_user', $data);
     }
 
     //--------------------------------------------------------------------
 
 
-    public function forgot_password()
+    public function forgotPassword()
     {
-        $this->load->helper('form');
+        helper('form');
 
-        if ($this->input->post())
+        if ($this->request->getMethod() === 'post')
         {
-            $auth = new LocalAuthentication();
-            $this->load->model('user_model');
-            $auth->useModel($this->user_model);
-
-            if ($auth->remindUser($this->input->post('email')))
+            if ($this->auth->remindUser($this->request->getPost('email')))
             {
                 $this->setMessage(lang('auth.send_success'), 'success');
-                redirect( Route::named('reset_pass') );
+                redirect('reset_pass' );
             }
             else
             {
-                $this->setMessage($auth->error(), 'danger');
+                $this->setMessage($this->auth->error(), 'danger');
             }
         }
 
-        $this->themer->setLayout('login');
-        $this->render();
+        $this->layout = 'login';
+        $this->render('Myth\Auth\Views\login');
     }
 
     //--------------------------------------------------------------------
 
-    public function reset_password()
+    public function resetPassword()
     {
-        $this->load->helper('form');
+        helper('form');
 
-        if ($this->input->post())
+        if ($this->request->getMethod() === 'post')
         {
-            $auth = new LocalAuthentication();
-            $this->load->model('user_model');
-            $auth->useModel($this->user_model);
-
             $credentials = [
-                'email' => $this->input->post('email'),
-                'code'  => $this->input->post('code')
+                'email' => $this->request->getPost('email'),
+                'code'  => $this->request->getPost('code')
             ];
 
-            $password     = $this->input->post('password');
-            $pass_confirm = $this->input->post('pass_confirm');
+            $password     = $this->request->getPost('password');
+            $pass_confirm = $this->request->getPost('pass_confirm');
 
-            if ($auth->resetPassword($credentials, $password, $pass_confirm))
+            if ($this->auth->resetPassword($credentials, $password, $pass_confirm))
             {
                 $this->setMessage(lang('auth.new_password_success'), 'success');
-                redirect( Route::named('login') );
+                redirect('login');
             }
             else
             {
-                $this->setMessage($auth->error(), 'danger');
+                $this->setMessage($this->auth->error(), 'danger');
             }
         }
 
         $data = [
-            'email' => $this->input->get('e'),
-            'code'  => $this->input->get('code')
+            'email' => $this->request->getVar('e'),
+            'code'  => $this->request->getVar('code')
         ];
 
-        $this->addScript('register.js');
-        $this->themer->setLayout('login');
-        $this->render($data);
+//        $this->addScript('register.js');
+        $this->layout = 'login';
+        $this->render('Myth\Auth\Views\reset_password', $data);
     }
 
     //--------------------------------------------------------------------
@@ -240,27 +240,23 @@ class Auth extends BaseController
 	 * and create a new one. Often used as part of the force password
 	 * reset process, but could be used within a user area.
 	 */
-	public function change_password()
+	public function changePassword()
 	{
-		$auth = new LocalAuthentication();
-		$this->load->model('user_model');
-		$auth->useModel($this->user_model);
-
-		if (! $auth->isLoggedIn())
+		if (! $this->auth->isLoggedIn())
 		{
-			redirect( Route::named('login') );
+			redirect('login');
 		}
 
-		$this->load->helper('form');
+		helper('form');
 
-		if ($this->input->post())
+		if ($this->request->getMethod() === 'post')
 		{
-			$current_pass = $this->input->post('current_pass');
-			$password     = $this->input->post('password');
-			$pass_confirm = $this->input->post('pass_confirm');
+			$current_pass = $this->request->getVar('current_pass');
+			$password     = $this->request->getVar('password');
+			$pass_confirm = $this->request->getVar('pass_confirm');
 
 			// Does the current password match?
-			if (! password_verify($current_pass, $auth->user()['password_hash']))
+			if (! password_verify($current_pass, $this->auth->user()['password_hash']))
 			{
 				$this->setMessage( lang('auth.bad_current_pass'), 'warning');
 				redirect( current_url() );
@@ -275,7 +271,7 @@ class Auth extends BaseController
 
 			$hash = \Myth\Auth\Password::hashPassword($password);
 
-			if (! $this->user_model->update( $auth->id(), ['password_hash' => $hash, 'force_pass_reset' => 0]) )
+			if (! $this->userModel->update( $auth->id(), ['password_hash' => $hash, 'force_pass_reset' => 0]) )
 			{
 				$this->setMessage( 'Error: '. $this->user_model->error(), 'danger');
 				redirect( current_url() );
@@ -310,7 +306,7 @@ class Auth extends BaseController
      */
     public function password_check($str)
     {
-        $this->load->helper('auth/password');
+        helper('auth/password');
 
         $strength = isStrongPassword($str);
 

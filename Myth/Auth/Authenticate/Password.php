@@ -30,7 +30,9 @@
  * @since       Version 1.0
  */
 
-define('DICTIONARY_PATH', dirname(__FILE__) .'/dictionary.txt');
+use Myth\Auth\Config\Auth;
+
+define('DICTIONARY_PATH', dirname(__FILE__).'/dictionary.txt');
 
 /**
  * Class Password
@@ -60,12 +62,9 @@ class Password {
      */
     public static function hashPassword($password)
     {
-        if (! config_item('auth.hash_cost'))
-        {
-            get_instance()->load->config('auth');
-        }
+    	$config = new Auth();
 
-        return password_hash($password, PASSWORD_DEFAULT, ['cost' => config_item('auth.hash_cost')]);
+        return password_hash($password, PASSWORD_DEFAULT, ['cost' => $config->hashCost]);
     }
 
     //--------------------------------------------------------------------

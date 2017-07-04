@@ -1,4 +1,7 @@
 <?php namespace Myth\Auth\Authorize;
+
+use CodeIgniter\Events\Events;
+
 /**
  * Sprint
  *
@@ -30,9 +33,6 @@
  * @since       Version 1.0
  */
 
-use Myth\Auth\Flat\FlatGroupsModel;
-use Myth\Auth\Flat\FlatPermissionsModel;
-use Myth\Events\Events;
 
 class FlatAuthorization implements AuthorizeInterface {
 
@@ -51,7 +51,6 @@ class FlatAuthorization implements AuthorizeInterface {
 		$this->groupModel      = ! empty($groupModel) ? $groupModel : new FlatGroupsModel();
 		$this->permissionModel = ! empty($permModel)  ? $permModel  : new FlatPermissionsModel();
 
-		get_instance()->load->language('auth/auth');
 	}
 
 	//--------------------------------------------------------------------

@@ -99,10 +99,11 @@ interface AuthenticateInterface {
 	/**
 	 * Registers a new user and handles activation method.
 	 *
-	 * @param $user_data
+	 * @param $userData
+	 *
 	 * @return bool
 	 */
-	public function registerUser($user_data);
+	public function registerUser($user);
 
 	//--------------------------------------------------------------------
 

@@ -30,46 +30,24 @@
  * @since       Version 1.0
  */
 
-use Myth\Models\CIDbModel;
+use CodeIgniter\Model;
 
-class FlatPermissionsModel extends CIDbModel {
-	
-	protected $table_name = 'auth_permissions';
+class FlatPermissionsModel extends Model {
 
-	protected $soft_deletes = false;
+	protected $table      = 'auth_permissions';
+	protected $primaryKey = 'id';
 
-	protected $set_created = false;
+	protected $returnType = 'array';
 
-	protected $set_modified = false;
+	protected $useSoftDeletes = false;
+	protected $useTimestamps = false;
 
-	protected $protected_attributes = ['id', 'submit'];
+	protected $allowedFields = ['name', 'description'];
 
 	protected $validation_rules = [
-		[
-			'field' => 'name',
-			'label' => 'Name',
-			'rules' => 'trim|max_length[255]'
-		],
-		[
-			'field' => 'description',
-			'label' => 'Description',
-			'rules' => 'trim|max_length[255]'
-		],
+		'name'  => 'required|min_length[3]|max_length[255]|is_unique[auth_permissions.name]',
+		'description' => 'max_length[255]'
 	];
-
-	protected $insert_validate_rules = [
-		'name'      => 'required|is_unique[auth_groups.name]'
-	];
-
-	protected $before_insert = [];
-	protected $before_update = [];
-	protected $after_insert  = [];
-	protected $after_update  = [];
-
-
-	protected $fields = [];
-
-	//--------------------------------------------------------------------
 
 	/**
 	 * Checks to see if a user, or one of their groups, has a specific
@@ -82,11 +60,12 @@ class FlatPermissionsModel extends CIDbModel {
 	 */
 	public function doesUserHavePermission($user_id, $permission_id)
 	{
-		$permissions = $this->join('auth_groups_permissions', 'auth_groups_permissions.permission_id = auth_permissions.id', 'inner')
-							->join('auth_groups_users', 'auth_groups_users.group_id = auth_groups_permissions.group_id', 'inner')
-							->where('auth_groups_users.user_id', (int)$user_id)
-							->as_array()
-							->find_all();
+		$permissions = $this->db
+			->join('auth_groups_permissions', 'auth_groups_permissions.permission_id = auth_permissions.id', 'inner')
+			->join('auth_groups_users', 'auth_groups_users.group_id = auth_groups_permissions.group_id', 'inner')
+			->where('auth_groups_users.user_id', (int)$user_id)
+			->asArray()
+			->find_all();
 
 		if (! $permissions)
 		{

@@ -1,5 +1,7 @@
 <?php namespace Myth\Auth\Models;
 
+use CodeIgniter\Model;
+
 /**
  * Class Login_model
  *
@@ -9,7 +11,7 @@
  * By default it will use the 'auth_logins' for any CIDbModel-related calls,
  * but methods are included to work with 'auth_login_attempts' and 'auth_tokens' as well.
  */
-class Login_model extends \CodeIgniter\Model {
+class LoginModel extends Model {
 
     protected $table_name = 'auth_logins';
 

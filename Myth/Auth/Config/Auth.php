@@ -15,6 +15,14 @@ class Auth extends BaseConfig
 	public $authorizeLib = '\Myth\Auth\Authorize\FlatAuthorization';
 
 	//--------------------------------------------------------------------
+	// AUTHORIZATION DEFAULT ROLE
+	//--------------------------------------------------------------------
+	// Specifies the name of the default role that should be assigned
+	// to new users upon their creation, if no other roles are assigned.
+	//
+	public $defaultGroup = 'users';
+
+	//--------------------------------------------------------------------
 	// AUTHENTICATION ENGINE
 	//--------------------------------------------------------------------
 	// Specifies which library should be used to provide the Authentication

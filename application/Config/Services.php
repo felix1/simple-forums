@@ -1,6 +1,13 @@
 <?php namespace Config;
 
+use App\Domains\Users\UserModel;
 use CodeIgniter\Config\Services as CoreServices;
+use Myth\Auth\Authenticate\LocalAuthentication;
+use Myth\Auth\Authorize\FlatAuthorization;
+use Myth\Auth\Authorize\FlatGroupsModel;
+use Myth\Auth\Authorize\FlatPermissionsModel;
+use Myth\Auth\Config\Auth;
+use Myth\Auth\Models\LoginModel;
 
 require_once BASEPATH.'Config/Services.php';
 
@@ -19,5 +26,37 @@ require_once BASEPATH.'Config/Services.php';
  */
 class Services extends CoreServices
 {
+	/**
+	 * Return the authentication library.
+	 *
+	 * @param bool $getShared
+	 *
+	 * @return \Myth\Auth\Authenticate\LocalAuthentication
+	 */
+	public static function authentication(bool $getShared = true)
+	{
+		if ($getShared)
+		{
+			return self::getSharedInstance('authentication');
+		}
 
+		return new LocalAuthentication(new Auth(), new UserModel(), new LoginModel());
+	}
+
+	/**
+	 * Return the Authorization library.
+	 *
+	 * @param bool $getShared
+	 *
+	 * @return \Myth\Auth\Authorize\FlatAuthorization
+	 */
+	public static function authorization(bool $getShared=true)
+	{
+		if ($getShared)
+		{
+			return self::getSharedInstance('authorization');
+		}
+
+		return new FlatAuthorization(new FlatGroupsModel(), new FlatPermissionsModel());
+	}
 }
