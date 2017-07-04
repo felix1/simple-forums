@@ -542,7 +542,7 @@ class FlatAuthorization implements AuthorizeInterface {
 			'description' => $description
 		];
 
-		$id = $this->groupModel->insert( $data );
+		$id = $this->groupModel->insert($data);
 
 		if ( is_numeric( $id ) )
 		{

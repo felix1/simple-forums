@@ -20,7 +20,7 @@ class Auth extends BaseConfig
 	// Specifies the name of the default role that should be assigned
 	// to new users upon their creation, if no other roles are assigned.
 	//
-	public $defaultGroup = 'users';
+	public $defaultGroup = 'members';
 
 	//--------------------------------------------------------------------
 	// AUTHENTICATION ENGINE
