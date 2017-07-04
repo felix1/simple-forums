@@ -356,7 +356,7 @@ class LocalAuthentication implements AuthenticateInterface
         // Save the user
         if (! $id = $this->userModel->insert($user))
         {
-            $this->error = $this->userModel->error();
+            $this->error = $this->userModel->errors();
             return false;
         }
 

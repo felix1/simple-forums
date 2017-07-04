@@ -67,9 +67,9 @@ class BaseController extends Controller
 	{
 		if (! empty($message))
 		{
-			if (isset($this->session))
+			if (isset($_SESSION))
 			{
-				$this->session->set_flashdata('message', $type.'::'.$message);
+				session()->setFlashdata('message', $type.'::'.$message);
 			}
 
 			$this->message = [

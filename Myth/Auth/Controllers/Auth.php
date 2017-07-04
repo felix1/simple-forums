@@ -129,13 +129,12 @@ class Auth extends BaseController
 
 		if (! empty($user))
 		{
+			$user->addToGroup($this->config->defaultGroup);
 			$this->setMessage(lang('Auth.didRegister'), 'success');
 			redirect('login');
 		}
 
-		$user->addToGroup($this->config->defaultGroup);
-
-		$this->setMessage($this->auth->error(), 'danger');
+		$this->setMessage(implode('<br>', $this->auth->error()), 'danger');
 		redirect_with_input('register');
 	}
 
