@@ -1,4 +1,8 @@
 <?php namespace Myth\Auth;
+
+use Config\Services;
+use Myth\Auth\Config\Auth;
+
 /**
  * Sprint
  *
@@ -44,7 +48,12 @@ trait AuthTrait {
 	 */
 	public $authorize = null;
 
-	private $classes_loaded = false;
+	/**
+	 * @var \Myth\Auth\Config\Auth
+	 */
+	protected $authConfig;
+
+	private $classesLoaded = false;
 
 	//--------------------------------------------------------------------
 
@@ -184,27 +193,17 @@ trait AuthTrait {
 	 */
 	public function setupAuthClasses()
 	{
-		if ($this->classes_loaded)
+		if ($this->classesLoaded)
 		{
 			return;
 		}
 
-		get_instance()->config->load('auth');
-		get_instance()->load->language('auth/auth');
+		$this->authConfig = new Auth();
 
 		/*
 		 * Authentication
 		 */
-		$auth = config_item('auth.authenticate_lib');
-
-		if (empty($auth)) {
-			throw new \RuntimeException( lang('auth.no_authenticate') );
-		}
-
-		$this->authenticate = new $auth( get_instance() );
-
-		get_instance()->load->model('auth/user_model', 'user_model', true);
-		$this->authenticate->useModel( get_instance()->user_model );
+		$this->authenticate = Services::authentication();
 
 		// Try to log us in automatically.
 		if (! $this->authenticate->isLoggedIn())
@@ -215,13 +214,7 @@ trait AuthTrait {
 		/*
 		 * Authorization
 		 */
-		$auth = config_item('auth.authorize_lib');
-
-		if (empty($auth)) {
-			throw new \RuntimeException( lang('auth.no_authenticate') );
-		}
-
-		$this->authorize = new $auth();
+		$this->authorize = Services::authorization();
 	}
 
 	//--------------------------------------------------------------------

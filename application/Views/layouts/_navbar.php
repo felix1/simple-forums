@@ -9,8 +9,13 @@
             <li class="nav-item active"><a class="nav-link" href="<?= route_to('categories') ?>">Categories</a></li>
             <li class="nav-item"><a class="nav-link" href="<?= route_to('recent') ?>">Recent</a></li>
             <li class="nav-item"><a class="nav-link" href="<?= route_to('users') ?>">User</a></li>
-            <li class="nav-item"><a class="nav-link" href="<?= route_to('login') ?>">Login</a></li>
-            <li class="nav-item"><a class="nav-link" href="<?= route_to('register') ?>">Register</a></li>
+
+            <?php if (! $authenticate->isLoggedIn()) : ?>
+                <li class="nav-item"><a class="nav-link" href="<?= route_to('login') ?>">Login</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= route_to('register') ?>">Register</a></li>
+            <?php else: ?>
+                <li class="nav-item"><a class="nav-link" href="<?= route_to('logout') ?>">Logout</a></li>
+            <?php endif ?>
         </ul>
 
     </div>

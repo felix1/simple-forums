@@ -2,9 +2,12 @@
 
 use CodeIgniter\Controller;
 use Config\Services;
+use Myth\Auth\AuthTrait;
 
 class BaseController extends Controller
 {
+	use AuthTrait;
+
 	/**
 	 * Stores view data.
 	 *
@@ -22,6 +25,13 @@ class BaseController extends Controller
 	protected $message;
 
 	//--------------------------------------------------------------------
+
+	public function __construct(...$params)
+	{
+		parent::__construct(...$params);
+
+		$this->setupAuthClasses();
+	}
 
 	public function setData(array $data)
 	{
@@ -42,6 +52,10 @@ class BaseController extends Controller
 
 		// Build our notices from the theme's view file.
 		$data['notice'] = view('layouts/_notice', ["notice" => $this->message()]);
+
+		// Pass along our auth classes
+		$data['authenticate'] = $this->authenticate;
+		$data['authorize']    = $this->authorize;
 
 		$content = view($view, $data, ['saveData' => true]);
 
@@ -104,7 +118,7 @@ class BaseController extends Controller
 			if (! empty($message))
 			{
 				// Split out our message parts
-				$tempMessage      = explode('::', $message);
+				$tempMessage       = explode('::', $message);
 				$return['type']    = $tempMessage[0];
 				$return['message'] = $tempMessage[1];
 

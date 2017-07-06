@@ -279,7 +279,7 @@ class LocalAuthentication implements AuthenticateInterface
 		// to determine whether a user is logged in or not.
 		if (! $this->user)
 		{
-			$this->user = $this->userModel->findBy('id', (int)$id);
+			$this->user = $this->userModel->find($id);
 
 			if (empty($this->user))
 			{
