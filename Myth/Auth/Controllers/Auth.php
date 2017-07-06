@@ -21,7 +21,6 @@ class Auth extends BaseController
         parent::__construct(...$params);
 
         $this->config = new \Myth\Auth\Config\Auth;
-        $this->auth = new LocalAuthentication($this->config, new UserModel(), new LoginModel());
     }
 
     //--------------------------------------------------------------------
@@ -33,7 +32,7 @@ class Auth extends BaseController
         $redirectURL = session('redirect_url');
 
         // No need to login again if they are already logged in...
-        if ($this->auth->isLoggedIn())
+        if ($this->authenticate->isLoggedIn())
         {
             unset($_SESSION['redirect_url']);
             redirect($redirectURL);
@@ -56,10 +55,10 @@ class Auth extends BaseController
 
 		$remember = (bool)$this->request->getVar('remember');
 
-		if ($this->auth->login($post_data, $remember))
+		if ($this->authenticate->login($post_data, $remember))
 		{
 			// Is the user being forced to reset their password?
-			if ($this->auth->user()->force_pass_reset === 1)
+			if ($this->authenticate->user()->force_pass_reset === 1)
 			{
 				redirect('change_pass');
 			}
@@ -78,9 +77,9 @@ class Auth extends BaseController
 
 	public function logout()
     {
-        if ($this->auth->isLoggedIn())
+        if ($this->authenticate->isLoggedIn())
         {
-            $this->auth->logout();
+            $this->authenticate->logout();
 
             $this->setMessage(lang('auth.did_logout'), 'success');
         }
@@ -128,7 +127,7 @@ class Auth extends BaseController
 			'password'     => $this->request->getPost('password'),
 		]);
 
-		$user = $this->auth->registerUser($user);
+		$user = $this->authenticate->registerUser($user);
 
 		if (! empty($user))
 		{
@@ -137,7 +136,7 @@ class Auth extends BaseController
 			redirect('login');
 		}
 
-		$this->setMessage(implode('<br>', $this->auth->error()), 'danger');
+		$this->setMessage(implode('<br>', $this->authenticate->error()), 'danger');
 		redirect_with_input('register');
 	}
 
@@ -154,14 +153,14 @@ class Auth extends BaseController
                   'code'  => $this->request->getPost('code')
             ];
 
-            if ($this->auth->activateUser($post_data))
+            if ($this->authenticate->activateUser($post_data))
             {
                 $this->setMessage(lang('auth.did_activate'), 'success');
                 redirect( Route::named('login') );
             }
             else
             {
-                $this->setMessage($this->auth->error(), 'danger');
+                $this->setMessage($this->authenticate->error(), 'danger');
             }
         }
 
@@ -183,14 +182,14 @@ class Auth extends BaseController
 
         if ($this->request->getMethod() === 'post')
         {
-            if ($this->auth->remindUser($this->request->getPost('email')))
+            if ($this->authenticate->remindUser($this->request->getPost('email')))
             {
                 $this->setMessage(lang('auth.send_success'), 'success');
                 redirect('reset_pass' );
             }
             else
             {
-                $this->setMessage($this->auth->error(), 'danger');
+                $this->setMessage($this->authenticate->error(), 'danger');
             }
         }
 
@@ -214,14 +213,14 @@ class Auth extends BaseController
             $password     = $this->request->getPost('password');
             $pass_confirm = $this->request->getPost('pass_confirm');
 
-            if ($this->auth->resetPassword($credentials, $password, $pass_confirm))
+            if ($this->authenticate->resetPassword($credentials, $password, $pass_confirm))
             {
                 $this->setMessage(lang('auth.new_password_success'), 'success');
                 redirect('login');
             }
             else
             {
-                $this->setMessage($this->auth->error(), 'danger');
+                $this->setMessage($this->authenticate->error(), 'danger');
             }
         }
 
@@ -244,7 +243,7 @@ class Auth extends BaseController
 	 */
 	public function changePassword()
 	{
-		if (! $this->auth->isLoggedIn())
+		if (! $this->authenticate->isLoggedIn())
 		{
 			redirect('login');
 		}
@@ -258,7 +257,7 @@ class Auth extends BaseController
 			$pass_confirm = $this->request->getVar('pass_confirm');
 
 			// Does the current password match?
-			if (! password_verify($current_pass, $this->auth->user()['password_hash']))
+			if (! password_verify($current_pass, $this->authenticate->user()['password_hash']))
 			{
 				$this->setMessage( lang('auth.bad_current_pass'), 'warning');
 				redirect( current_url() );
