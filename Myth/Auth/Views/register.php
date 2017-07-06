@@ -3,17 +3,17 @@
 
     <h2 class="text-center"><?= lang('auth.register') ?></h2>
 
-    <?= $notice ?>
+    <?= $validation->listErrors() ?>
 
     <br>
 
     <div class="form-group">
-        <label for="first_name"><?= lang('auth.first_name') ?></label>
+        <label for="first_name"><?= lang('auth.firstName') ?></label>
         <input type="text" name="first_name" class="form-control" required autofocus value="<?= set_value('first_name') ?>">
     </div>
 
     <div class="form-group">
-        <label for="last_name"><?= lang('auth.last_name') ?></label>
+        <label for="last_name"><?= lang('auth.lastName') ?></label>
         <input type="text" name="last_name" class="form-control" required value="<?= set_value('last_name') ?>" >
     </div>
 
@@ -35,18 +35,15 @@
     </div>
 
     <div class="form-group">
-        <label for="pass_confirm"><?= lang('auth.pass_confirm') ?></label>
+        <label for="pass_confirm"><?= lang('auth.passConfirm') ?></label>
         <input type="password" name="pass_confirm" id="pass-confirm" class="form-control" required>
     </div>
-
-
-<!--    --><?//= $uikit->notice(lang('auth.password_strength'), 'default', false, ['class' => 'pass-strength']); ?>
 
     <br>
 
     <input class="btn btn-lg btn-primary btn-block" id="submit" name="submit" type="submit" value="<?= lang('auth.register') ?>" />
 
     <br/>
-    <p><?= lang('auth.have_account') ?></p>
+    <p><?= lang('auth.haveAccount') ?></p>
 
 </form>

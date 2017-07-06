@@ -3,6 +3,7 @@
 use App\Domains\Users\User;
 use App\Domains\Users\UserModel;
 use App\Controllers\BaseController;
+use Config\Services;
 use \Myth\Auth\Authenticate\LocalAuthentication;
 use Myth\Auth\Models\LoginModel;
 
@@ -46,7 +47,7 @@ class Auth extends BaseController
 
 	public function attemptLogin()
 	{
-		$redirectURL = session('redirect_url');
+		$redirectURL = session('redirect_url') ?? '/';
 
 		$post_data = [
 			'email'    => $this->request->getVar('email'),
@@ -58,17 +59,17 @@ class Auth extends BaseController
 		if ($this->auth->login($post_data, $remember))
 		{
 			// Is the user being forced to reset their password?
-			if ($this->auth->user()['force_pass_reset'] == 1)
+			if ($this->auth->user()->force_pass_reset === 1)
 			{
 				redirect('change_pass');
 			}
 
 			unset($_SESSION['redirect_url']);
-			$this->setMessage(lang('auth.did_login'), 'success');
+			$this->setMessage(lang('Auth.didLogin'), 'success');
 			redirect($redirectURL);
 		}
 
-		$this->setMessage(lang('auth.invalid_user'), 'danger');
+		$this->setMessage(lang('Auth.invalidUser'), 'danger');
 
 		redirect_with_input('login');
 	}
@@ -96,7 +97,9 @@ class Auth extends BaseController
 //        $this->addScript('register.js');
         $this->layout = 'login';
 
-        $this->render('Myth\Auth\Views\register');
+        $this->render('Myth\Auth\Views\register', [
+        	'validation' => Services::validation()
+        ]);
     }
 
     //--------------------------------------------------------------------

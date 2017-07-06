@@ -1,4 +1,4 @@
-<form action="<?= current_url() ?>" id="login_form">
+<form action="<?= current_url() ?>" method="post" id="login_form">
     <?= csrf_field() ?>
 
     <h2 class="text-center"><?= lang('auth.signin') ?></h2>
@@ -20,7 +20,7 @@
     <div class="form-check">
         <label class="form-check-label">
             <input name="remember" class="form-check-input" type="checkbox" value="1" <?= set_checkbox('remember', 1) ?>>
-	        <?= lang('auth.remember_label') ?>
+	        <?= lang('auth.rememberLabel') ?>
         </label>
     </div>
 
@@ -29,7 +29,7 @@
     <input type="submit" class="btn btn-lg btn-primary btn-block" id="submit" name="submit" value="<?= lang('auth.signin') ?>">
 
     <br/>
-    <p><?= lang('auth.need_account') ?></p>
-    <p><?= lang('auth.forgot_pass') ?></p>
+    <p><?= lang('auth.needAccount') ?></p>
+    <p><?= lang('auth.forgotPass') ?></p>
 
 </form>
