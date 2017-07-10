@@ -608,7 +608,7 @@ class LocalAuthentication implements AuthenticateInterface
 		$email = strtolower($email);
 
 		// Is it a valid user?
-		$user = $this->userModel->find_by('email', $email);
+		$user = $this->userModel->findWhere('email', $email);
 
 		if (! $user)
 		{
@@ -617,12 +617,16 @@ class LocalAuthentication implements AuthenticateInterface
 			return false;
 		}
 
-		// Generate/store our codes
-		$this->ci->load->helper('string');
-		$token = random_string('alnum', 24);
-		$hash  = hash('sha1', config_item('auth.salt').$token);
+		// Should be an array returned, even if only with a single item.
+		$user = $user[0];
 
-		$result = $this->userModel->update($user->id, ['reset_hash' => $hash]);
+		// Generate/store our codes
+		helper('text');
+		$token = random_string('alnum', 24);
+
+		$user->reset_hash = hash('sha1', $this->config->salt.$token);
+
+		$result = $this->userModel->save($user);
 
 		if (! $result)
 		{
@@ -631,7 +635,7 @@ class LocalAuthentication implements AuthenticateInterface
 			return false;
 		}
 
-		Events::trigger('didRemindUser', [(array)$user, $token]);
+		Events::trigger('didRemindUser', [$user, $token]);
 
 		return true;
 	}

@@ -30,6 +30,6 @@
 
     <br/>
     <p><?= lang('auth.needAccount') ?></p>
-    <p><?= lang('auth.forgotPass') ?></p>
+    <p><a href="<?= route_to('forgot_password') ?>"><?= lang('auth.forgotPass') ?></a></p>
 
 </form>

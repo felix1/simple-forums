@@ -175,31 +175,42 @@ class Auth extends BaseController
 
     //--------------------------------------------------------------------
 
-
+	/**
+	 * Displays the forgotten password request form.
+	 */
     public function forgotPassword()
     {
         helper('form');
 
-        if ($this->request->getMethod() === 'post')
-        {
-            if ($this->authenticate->remindUser($this->request->getPost('email')))
-            {
-                $this->setMessage(lang('auth.send_success'), 'success');
-                redirect('reset_pass' );
-            }
-            else
-            {
-                $this->setMessage($this->authenticate->error(), 'danger');
-            }
-        }
-
         $this->layout = 'login';
-        $this->render('Myth\Auth\Views\login');
+        $this->render('Myth\Auth\Views\forgot_password');
     }
 
     //--------------------------------------------------------------------
 
-    public function resetPassword()
+	/**
+	 * Attempts to send an email to the user who just requested it.
+	 */
+	public function sendForgotPassword()
+	{
+		if ($this->authenticate->remindUser($this->request->getPost('email')))
+		{
+			$this->setMessage(lang('Auth.sendSuccess'), 'success');
+
+			redirect('reset_password' );
+		}
+
+		$this->setMessage($this->authenticate->error(), 'danger');
+
+		redirect('forgot_password');
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * Display the form to allow someone to reset their password.
+	 */
+	public function resetPassword()
     {
         helper('form');
 

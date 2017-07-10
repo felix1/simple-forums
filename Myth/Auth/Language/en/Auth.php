@@ -30,7 +30,7 @@ return [
 
 	'haveAccount' => 'Already a member? <a href="'.route_to('login').'">Sign In</a>',
 	'needAccount' => 'Need an Account? <a href="'.route_to('register').'">Sign Up</a>',
-	'forgotPass'  => '<a href="'.route_to('forgot_pass').'">Forgot your Password?</a>',
+	'forgotPass'  => 'Forgot your Password?',
 
 	'firstName' => 'First Name',
 	'lastName'  => 'Last Name',
