@@ -44,6 +44,9 @@ class Auth extends BaseController
 
     //--------------------------------------------------------------------
 
+	/**
+	 * Attempts to log the user in based on a POST form.
+	 */
 	public function attemptLogin()
 	{
 		$redirectURL = session('redirect_url') ?? '/';
@@ -75,6 +78,9 @@ class Auth extends BaseController
 
 	//--------------------------------------------------------------------
 
+	/**
+	 * Logs the user out, destroying session.
+	 */
 	public function logout()
     {
         if ($this->authenticate->isLoggedIn())

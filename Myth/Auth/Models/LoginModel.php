@@ -201,6 +201,25 @@ class LoginModel extends Model
 	//--------------------------------------------------------------------
 
 	/**
+	 * Stores the remember me token for a single user.
+	 *
+	 * @param string $email
+	 * @param string $hash
+	 *
+	 * @return bool
+	 */
+	public function rememberUser(string $email, string $hash)
+	{
+		return $this->db->table('auth_tokens')
+			->insert([
+				'email' => $email,
+				'hash'  => $hash,
+				'created' => date('Y-m-d H:i:s')
+			]);
+	}
+
+
+	/**
 	 * Gets the timestamp of the last attempted login for this user.
 	 *
 	 * @param $ip_address

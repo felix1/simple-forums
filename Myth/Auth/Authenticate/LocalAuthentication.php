@@ -866,15 +866,9 @@ class LocalAuthentication implements AuthenticateInterface
 		$newToken = $this->loginModel->generateRememberToken($user);
 
 		// Save the token to the database.
-		$data = [
-			'email'   => $user->email,
-			'hash'    => sha1($this->config->salt.$newToken),
-			'created' => date('Y-m-d H:i:s'),
-		];
+		$hash = sha1($this->config->salt.$newToken);
 
-		$this->loginModel->table('auth_tokens')
-						 ->protect(false)
-		                 ->insert($data);
+		$this->loginModel->rememberUser($user->email, $hash);
 
 		$appConfig = new App();
 
