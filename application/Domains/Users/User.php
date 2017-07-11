@@ -74,6 +74,19 @@ class User extends Entity
 		return $this;
 	}
 
+	/**
+	 * Provides a link to the user's avatar, or a Gravatar
+	 */
+	public function avatar(int $size=60)
+	{
+		if (! empty($this->avatar)) return $this->avatar;
+
+		$hash = md5(strtolower(trim($this->email)));
+
+		return "https://www.gravatar.com/avatar/{$hash}?s={$size}";
+	}
+
+
 	//--------------------------------------------------------------------
 	// Banning Users
 	//--------------------------------------------------------------------

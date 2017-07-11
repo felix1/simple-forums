@@ -1,5 +1,6 @@
 <?php namespace App\Domains\Forums;
 
+use App\Domains\Users\User;
 use CodeIgniter\Entity;
 
 /**
@@ -30,6 +31,11 @@ class Thread extends Entity
 	public $posts = [];
 
 	/**
+	 * @var \App\Domains\Users\User
+	 */
+	protected $user;
+
+	/**
 	 * Maps names used in sets and gets against unique
 	 * names within the class, allowing independence from
 	 * database column names.
@@ -50,7 +56,9 @@ class Thread extends Entity
 	 */
 	public function link()
 	{
-		return route_to('threadLink', $this->id);
+		$slug = $this->id.'-'.strtolower(url_title($this->title));
+
+		return route_to('threadLink', $slug);
 	}
 
 }

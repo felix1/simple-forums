@@ -52,4 +52,22 @@ class ForumController extends BaseController
 		]);
 	}
 
+	/**
+	 * Displays the overview of a single forum.
+	 *
+	 * @param int $id
+	 */
+	public function showForum(int $id)
+	{
+		$forum = $this->forums->find($id);
+		$threads = $this->threads->findForForum($id);
+		$threads = $this->threads->fillUsers($threads);
+
+		echo $this->render('forums/show', [
+			'forum'     => $forum,
+			'threads'   => $threads,
+			'pager'     => $this->threads->pager,
+		]);
+	}
+
 }

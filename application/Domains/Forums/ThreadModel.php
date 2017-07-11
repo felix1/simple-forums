@@ -1,7 +1,7 @@
 <?php namespace App\Domains\Forums;
 
 use CodeIgniter\Model;
-use Tests\Support\Models\UserModel;
+use App\Domains\Users\UserModel;
 
 /**
  * ThreadModel Model
@@ -90,5 +90,54 @@ class ThreadModel extends Model
 
 		return $threads;
 	}
+
+	public function fillUsers(array $threads = [])
+	{
+		if (empty($threads)) return $threads;
+
+		$userModel = new UserModel();
+
+		// Get a list of thread ids
+		$userIDs = [];
+		foreach ($threads as $thread)
+		{
+			$userIDs[] = $thread->user_id;
+		}
+		$userIDs = array_unique($userIDs);
+
+		// Get the posts for all of our categories
+		$users = $userModel->whereIn('id', $userIDs)->findAll();
+
+		// Grab our users with their ID as the key
+		// so it's simple to fill and we use less loops
+		$newUsers = [];
+		foreach ($users as $user)
+		{
+			$newUsers[$user->id] = $user;
+		}
+
+		foreach ($threads as $thread)
+		{
+			$thread->user = $newUsers[$thread->user_id];
+		}
+
+		return $threads;
+	}
+
+
+	/**
+	 * Finds a paginated list of threads that belong to
+	 * a single forum.
+	 *
+	 * @param int $forumID
+	 *
+	 * @return mixed
+	 */
+	public function findForForum(int $forumID)
+	{
+		return $this->where('forum_id', $forumID)
+			->paginate(20);
+	}
+
 
 }

@@ -56,6 +56,7 @@ class BaseController extends Controller
 		// Pass along our auth classes
 		$data['authenticate'] = $this->authenticate;
 		$data['authorize']    = $this->authorize;
+		$data['current_user'] = $this->authenticate->user();
 
 		$content = view($view, $data, ['saveData' => true]);
 
