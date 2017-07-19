@@ -1,6 +1,7 @@
 <?php namespace App\Domains\Forums;
 
 use CodeIgniter\Model;
+use App\Domains\Posts\PostModel;
 use App\Domains\Users\UserModel;
 
 /**
@@ -16,7 +17,7 @@ class ThreadModel extends Model
 	protected $returnType     = 'App\Domains\Forums\Thread';
 	protected $useSoftDeletes = false;
 
-	protected $allowedFields = ['user_id', 'forum_id', 'title', 'first_post', 'views', 'post_count', 'deleted_at'];
+	protected $allowedFields = ['user_id', 'forum_id', 'title', 'first_post', 'last_post', 'views', 'post_count', 'deleted_at'];
 
 	protected $useTimestamps = true;
 	protected $createdField  = 'created_at';
@@ -91,6 +92,14 @@ class ThreadModel extends Model
 		return $threads;
 	}
 
+	/**
+	 * Populates all threads with the User object
+	 * saving on calls to the db by doing it all in one query.
+	 *
+	 * @param array $threads
+	 *
+	 * @return array
+	 */
 	public function fillUsers(array $threads = [])
 	{
 		if (empty($threads)) return $threads;
@@ -138,6 +147,5 @@ class ThreadModel extends Model
 		return $this->where('forum_id', $forumID)
 			->paginate(20);
 	}
-
 
 }

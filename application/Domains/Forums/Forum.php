@@ -71,7 +71,9 @@ class Forum extends Entity
 	 */
 	public function link()
 	{
-		return route_to('forumLink', $this->id);
+		$slug = $this->id.'-'. url_title($this->name, '-', true);
+
+		return route_to('forumLink', $slug);
 	}
 
 

@@ -2,6 +2,7 @@
 
 use App\Domains\Forums\ForumModel;
 use App\Domains\Forums\ThreadModel;
+use App\Domains\Posts\PostModel;
 use Config\Services;
 
 class ForumController extends BaseController
@@ -57,9 +58,11 @@ class ForumController extends BaseController
 	 *
 	 * @param int $id
 	 */
-	public function showForum(int $id)
+	public function showForum(string $slug)
 	{
+		$id = (int)$slug;
 		$forum = $this->forums->find($id);
+
 		$threads = $this->threads->findForForum($id);
 		$threads = $this->threads->fillUsers($threads);
 

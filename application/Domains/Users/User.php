@@ -86,6 +86,18 @@ class User extends Entity
 		return "https://www.gravatar.com/avatar/{$hash}?s={$size}";
 	}
 
+	/**
+	 * Generates a link to the user's profile page.
+	 *
+	 * @return \CodeIgniter\Router\string|string
+	 */
+	public function link()
+	{
+		$slug = $this->id.'-'.url_title($this->username, '-', true);
+
+		return route_to('userProfile', $slug);
+	}
+
 
 	//--------------------------------------------------------------------
 	// Banning Users

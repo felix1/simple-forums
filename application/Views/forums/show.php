@@ -17,7 +17,7 @@
         <div class="col text-right">
 
             <?php if ($current_user) : ?>
-                <a href="#" class="btn btn-primary">New Discussion</a>
+                <a href="<?= route_to('newPost', $forum->id) ?>" class="btn btn-primary">New Discussion</a>
             <?php else : ?>
                 <a href="<?= route_to('login') ?>" class="btn btn-primary">Log in to Post</a>
             <?php endif ?>
@@ -36,7 +36,7 @@
             <div class="col">
                 <p>
                     <a href="<?= $thread->link() ?>"><?= esc($thread->title) ?></a>
-                    <br>1 day ago by <a href="#"><?= $thread->user->username ?></a>
+                    <br><?= $thread->userSummaryLine() ?></a>
                 </p>
             </div>
             <div class="col-2">

@@ -1,7 +1,10 @@
 <?php namespace App\Domains\Forums;
 
+use App\Domains\Posts\Post;
+use App\Domains\Posts\PostModel;
 use App\Domains\Users\User;
 use CodeIgniter\Entity;
+use CodeIgniter\I18n\Time;
 
 /**
  * A Thread holds many posts around a single topic (hopefully!).
@@ -16,6 +19,7 @@ class Thread extends Entity
 	protected $forum_id;
 	protected $title;
 	protected $first_post;
+	protected $last_post;
 	protected $view_count;
 	protected $post_count;
 	protected $created_at;
@@ -29,6 +33,16 @@ class Thread extends Entity
 	 * @var array
 	 */
 	public $posts = [];
+
+	/**
+	 * @var \App\Domains\Posts\Post
+	 */
+	protected $firstPostCache;
+
+	/**
+	 * @var Post
+	 */
+	protected $lastPostCache;
 
 	/**
 	 * @var \App\Domains\Users\User
@@ -50,6 +64,34 @@ class Thread extends Entity
 	protected $datamap = [];
 
 	/**
+	 * @var PostModel
+	 */
+	protected $postModel;
+
+	/**
+	 * Sets the PostModel to use.
+	 *
+	 * @param \App\Domains\Posts\PostModel $model
+	 *
+	 * @return $this
+	 */
+	public function setPostModel(PostModel &$model)
+	{
+		$this->postModel = $model;
+
+		return $this;
+	}
+
+	protected function ensurePostModel()
+	{
+		if (! $this->postModel instanceof PostModel)
+		{
+			$this->postModel = new PostModel();
+		}
+	}
+
+
+	/**
 	 * Generates a link to the thread-specific page.
 	 *
 	 * @return \CodeIgniter\Router\string|string
@@ -60,5 +102,100 @@ class Thread extends Entity
 
 		return route_to('threadLink', $slug);
 	}
+
+	/**
+	 * Returns the first post for this thread.
+	 *
+	 * @return \App\Domains\Posts\Post|array|null|object
+	 */
+	public function firstPost()
+	{
+		if (! $this->firstPostCache instanceof Post)
+		{
+			$this->ensurePostModel();
+			$this->firstPostCache  = $this->postModel->find($this->first_post);
+			$this->firstPostCache = $this->postModel->fillUsers([$this->firstPostCache])[0];
+		}
+
+		return $this->firstPostCache;
+	}
+
+	/**
+	 * Returns the last post for this thread.
+	 *
+	 * @return \App\Domains\Posts\Post|array|null|object
+	 */
+	public function lastPost()
+	{
+		if (! $this->lastPostCache instanceof Post)
+		{
+			$this->ensurePostModel();
+			$this->lastPostCache = $this->postModel->find($this->last_post ?? $this->first_post);
+			$this->lastPostCache = $this->postModel->fillUsers([$this->lastPostCache])[0];
+		}
+
+		return $this->lastPostCache;
+	}
+
+	/**
+	 * Gets our posts in a paginated manner ready for display.
+	 *
+	 * @param int $perPage
+	 */
+	public function populatePosts(int $perPage = 20)
+	{
+		$this->ensurePostModel();
+
+		$posts = $this->postModel->where('id !=', $this->first_post)
+								  ->where('thread_id', $this->id)
+		                         ->orderBy('created_at', 'desc')
+		                         ->paginate($perPage);
+
+		if (is_array($posts) && count($posts))
+		{
+			$posts = $this->postModel->fillUsers($posts);
+		}
+
+		$this->posts = $posts;
+	}
+
+
+	/**
+	 * Returns a paginated array of posts belonging to this thread.
+	 *
+	 * @param int $perPage
+	 *
+	 * @return array
+	 */
+	public function posts(int $perPage = 20)
+	{
+		if (empty($this->posts))
+		{
+			$this->populatePosts($perPage);
+		}
+
+		return $this->posts;
+	}
+
+	public function userSummaryLine()
+	{
+		$summary = '';
+
+		// Only 1 post?
+		if ($this->last_post === $this->first_post)
+		{
+			$date = Time::parse($this->created_at);
+			$summary = $date->humanize() ." by <a href='{$this->user->link()}'>{$this->user->username}</a>";
+		}
+		// Multiple posts..
+		else
+		{
+			$date = Time::parse($this->lastPost()->created_at);
+			$summary = "<a href='{$this->lastPost()->user->link()}'><i class=\"fa fa-reply\" aria-hidden=\"true\"></i>{$this->lastPost()->user->username}</a> replied {$date->humanize()}";
+		}
+
+		return $summary;
+	}
+
 
 }

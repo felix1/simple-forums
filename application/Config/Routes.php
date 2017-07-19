@@ -57,11 +57,16 @@ $routes->post('login', 'Auth::attemptLogin');
 $routes->get('register', 'Auth::register');
 $routes->post('register', 'Auth::doRegister');
 
+// Users
+$routes->get('people/(:segment)', 'UserController::show/$1', ['as' => 'userProfile']);
+
 // Forums
 $routes->get('categories', 'ForumController::showCategories');
 $routes->get('recent', 'ForumController::showRecent');
-$routes->get('forums/(:num)', 'ForumController::showForum/$1', ['as' => 'forumLink']);
-$routes->get('topic/(:num)', 'ForumController::showThread/$1', ['as' => 'threadLink']);
+$routes->get('forums/(:segment)', 'ForumController::showForum/$1', ['as' => 'forumLink']);
+$routes->get('topic/(:segment)', 'ThreadController::show/$1', ['as' => 'threadLink']);
+$routes->get('forums/(:num)/new_post', 'PostController::newPost/$1', ['as' => 'newPost']);
+
 
 /**
  * --------------------------------------------------------------------
