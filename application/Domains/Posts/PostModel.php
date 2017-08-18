@@ -55,9 +55,13 @@ class PostModel extends Model
 		$userIDs = [];
 		foreach ($posts as $post)
 		{
+			if (empty($post)) continue;
+
 			$userIDs[] = $post->user_id;
 		}
 		$userIDs = array_unique($userIDs);
+
+		if (empty($userIDs)) return $posts;
 
 		// Get the posts for all of our categories
 		$users = $userModel->whereIn('id', $userIDs)->findAll();

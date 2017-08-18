@@ -15,7 +15,14 @@ class BaseController extends Controller
 	 */
 	protected $data = [];
 
+	protected $theme = 'default';
+
 	protected $layout = 'master';
+
+	/**
+	 * @var \CodeIgniter\View\View
+	 */
+	protected $renderer;
 
 	/**
 	 * Stores current status message.
@@ -29,6 +36,8 @@ class BaseController extends Controller
 	public function __construct(...$params)
 	{
 		parent::__construct(...$params);
+
+		$this->renderer = Services::renderer(ROOTPATH."themes/{$this->theme}/");
 
 		$this->setupAuthClasses();
 	}
@@ -51,19 +60,44 @@ class BaseController extends Controller
 		$data = array_merge($data, $this->data);
 
 		// Build our notices from the theme's view file.
-		$data['notice'] = view('layouts/_notice', ["notice" => $this->message()]);
+		$data['notice'] = $this->renderView('layouts/_notice', ["notice" => $this->message()]);
 
 		// Pass along our auth classes
 		$data['authenticate'] = $this->authenticate;
 		$data['authorize']    = $this->authorize;
 		$data['current_user'] = $this->authenticate->user();
 
-		$content = view($view, $data, ['saveData' => true]);
+		$content = $this->renderView($view, $data, ['saveData' => true]);
 
-		$layout = view('layouts/'.$this->layout, $data, ['saveData' => true]);
+		$layout = $this->renderView('layouts/'.$this->layout, $data, ['saveData' => true]);
 		$layout = str_replace('{content}', $content, $layout);
 
 		echo $layout;
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * Same as the global view() helper, but uses our instance of the
+	 * renderer so we can render themes.
+	 *
+	 * @param string $name
+	 * @param array  $data
+	 * @param array  $options
+	 *
+	 * @return string
+	 */
+	protected function renderView(string $name, array $data = [], array $options = [])
+	{
+		$saveData = null;
+		if (array_key_exists('saveData', $options) && $options['saveData'] === true)
+		{
+			$saveData = (bool) $options['saveData'];
+			unset($options['saveData']);
+		}
+
+		return $this->renderer->setData($data, 'raw')
+		                      ->render($name, $options, $saveData);
 	}
 
 	//--------------------------------------------------------------------
