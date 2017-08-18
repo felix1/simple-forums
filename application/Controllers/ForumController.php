@@ -1,6 +1,6 @@
 <?php namespace App\Controllers;
 
-use App\Domains\Forums\ForumModel;
+use App\Domains\Forums\ForumManager;
 use App\Domains\Forums\ThreadModel;
 use App\Domains\Posts\PostModel;
 use Config\Services;
@@ -8,7 +8,7 @@ use Config\Services;
 class ForumController extends BaseController
 {
 	/**
-	 * @var \App\Domains\Forums\ForumModel
+	 * @var \App\Domains\Forums\ForumManager
 	 */
 	protected $forums;
 
@@ -21,7 +21,7 @@ class ForumController extends BaseController
 	{
 		parent::__construct(...$params);
 
-		$this->forums = new ForumModel();
+		$this->forums = new ForumManager();
 		$this->threads = new ThreadModel();
 	}
 
@@ -32,8 +32,9 @@ class ForumController extends BaseController
 	{
 		helper('typography');
 
-		$categories = $this->forums->findCategories();
-		$categories = $this->forums->fillForumsIntoCategories($categories);
+		$categories = $this->forums
+			->with('forums')
+			->findCategories();
 
 		echo $this->render('forums/categories', [
 			'categories' => $categories,
