@@ -77,10 +77,11 @@ class EntityManager extends Model
 	 * @param string|null $foreignKey
 	 * @param string|null $localKey
 	 * @param string|null $alias
+	 * @param array       $options
 	 */
-	public function hasOne(string $className, string $foreignKey=null, string $localKey=null, string $alias=null)
+	public function hasOne(string $className, string $foreignKey=null, string $localKey=null, string $alias=null, array $options=[])
 	{
-		$this->defineRelationship(static::ONE_TO_ONE, $className, $foreignKey, $localKey, $alias);
+		$this->defineRelationship(static::ONE_TO_ONE, $className, $foreignKey, $localKey, $alias, $options);
 	}
 
 	/**
@@ -90,10 +91,11 @@ class EntityManager extends Model
 	 * @param string|null $foreignKey
 	 * @param string|null $localKey
 	 * @param string|null $alias
+	 * @param array|null  $options
 	 */
-	public function hasMany(string $className, string $foreignKey=null, string $localKey=null, string $alias=null)
+	public function hasMany(string $className, string $foreignKey=null, string $localKey=null, string $alias=null, array $options=[])
 	{
-		$this->defineRelationship(static::ONE_TO_MANY, $className, $foreignKey, $localKey, $alias);
+		$this->defineRelationship(static::ONE_TO_MANY, $className, $foreignKey, $localKey, $alias, $options);
 	}
 
 	/**
@@ -104,9 +106,9 @@ class EntityManager extends Model
 	 * @param string|null $localKey
 	 * @param string|null $alias
 	 */
-	public function belongsTo(string $className, string $foreignKey = null, string $localKey=null, string $alias=null)
+	public function belongsTo(string $className, string $foreignKey = null, string $localKey=null, string $alias=null, array $options=[])
 	{
-		$this->defineRelationship(static::BELONGS_TO, $className, $foreignKey, $localKey, $alias);
+		$this->defineRelationship(static::BELONGS_TO, $className, $foreignKey, $localKey, $alias, $options);
 	}
 
 	public function hasManyToMany()
@@ -123,15 +125,16 @@ class EntityManager extends Model
 	 * @param string|null $localKey
 	 * @param string|null $alias
 	 */
-	protected function defineRelationship(int $type, string $className, string $foreignKey=null, string $localKey=null, string $alias=null)
+	protected function defineRelationship(int $type, string $className, string $foreignKey=null, string $localKey=null, string $alias=null, array $options=[])
 	{
-		$alias = $this->determineAlias($alias, $className);
+		$alias = $this->determineAlias($alias, $className, $type);
 
 		$this->relationships[$alias] = [
 			'class'     => $className,
-			'foreign'   => $this->determineForeignKey($foreignKey),
-			'local'     => $localKey ?? $this->primaryKey,
-			'type'      => $type
+			'foreign'   => $this->determineForeignKey($foreignKey, $type),
+			'local'     => $this->determineLocalKey($localKey, $type, $className),
+			'type'      => $type,
+			'options'   => $options
 		];
 	}
 
@@ -141,22 +144,19 @@ class EntityManager extends Model
 	 *
 	 * @param string|null $alias
 	 * @param string      $className
+	 * @param int         $type
 	 *
 	 * @return mixed|string
 	 */
-	protected function determineAlias(string $alias = null, string $className)
+	protected function determineAlias(string $alias = null, string $className, int $type)
 	{
 		if (! empty($alias)) return $alias;
 
-		$alias = trim(substr($className, strrpos($className, '\\')), '\\ ');
+		$alias = $this->convertClassNameToKey($className, true);
 
-		// Remove some common class qualifiers
-		$alias = str_replace('Manager', '', $alias);
-		$alias = str_replace('Model', '', $alias);
-
-		$alias = strtolower($alias);
-
-		$alias = plural($alias);
+		$alias = $type !== static::BELONGS_TO
+			? plural($alias)
+			: singular($alias);
 
 		return $alias;
 	}
@@ -171,21 +171,69 @@ class EntityManager extends Model
 	 *
 	 * @return string
 	 */
-	protected function determineForeignKey(string $foreignKey = null): string
+	protected function determineForeignKey(string $foreignKey = null, int $type): string
 	{
 		if (! empty($foreignKey)) return $foreignKey;
 
-		$className = get_class($this);
+		if ($type === static::BELONGS_TO)
+		{
+			return 'id';
+		}
 
-		$key = trim(substr($className, strrpos($className, '\\')), '\\ ');
+		return $this->convertClassNameToKey(get_class($this)).'_id';
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * Attempts to automatically determine the local key (the column in this
+	 * row that points to the other record) based on the classname.
+	 *
+	 * @param string|null $key
+	 * @param int         $type
+	 * @param string      $className
+	 *
+	 * @return mixed|string
+	 */
+	protected function determineLocalKey(string $key=null, int $type, string $className)
+	{
+		if (! empty($key)) return $key;
+
+		// BelongsTo relationships will base their key off of the
+		// related class.
+		if ($type === static::BELONGS_TO)
+		{
+			return $this->convertClassNameToKey($className).'_id';
+		}
+
+		// All others should use our primary key.
+		return $this->primaryKey;
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
+	 * Given a class name, will simplify it and convert it into something
+	 * that we expect a key might look like.
+	 *
+	 * @param string $class
+	 * @param bool   $maintainTense
+	 *
+	 * @return mixed|string
+	 */
+	protected function convertClassNameToKey(string $class, bool $maintainTense = false)
+	{
+		$key = trim(substr($class, strrpos($class, '\\')), '\\ ');
 
 		// Remove some common class qualifiers
 		$key = str_replace('Manager', '', $key);
 		$key = str_replace('Model', '', $key);
 
-		$key = singular(strtolower($key)).'_id';
+		$key = strtolower($key);
 
-		return $key;
+		return $maintainTense
+			? $key
+			: singular($key);
 	}
 
 	//--------------------------------------------------------------------
@@ -207,31 +255,29 @@ class EntityManager extends Model
 		$relations = $this->eagerLoad;
 		$this->eagerLoad = null;
 
-		if (is_array($data['data']) && count($data['data']))
+		foreach ($relations as $relation)
 		{
-			foreach ($relations as $relation)
+			if (! array_key_exists($relation, $this->relationships))
 			{
-				if (! array_key_exists($relation, $this->relationships))
-				{
-					throw new \BadMethodCallException($relation .' has not been defined and cannot be eager-loaded.');
-				}
-
-				switch ($this->relationships[$relation]['type'])
-				{
-					case static::ONE_TO_ONE:
-						$data['data'] = $this->fillOneToOne($data['data'], $this->relationships[$relation]);
-						break;
-					case static::ONE_TO_MANY:
-						$data['data'] = $this->fillOneToMany($data['data'], $this->relationships[$relation], $relation);
-						break;
-					case static::BELONGS_TO:
-						$data['data'] = $this->fillManyToOne($data['data'], $this->relationships[$relation]);
-						break;
-					case static::MANY_TO_MANY:
-						$data['data'] = $this->fillManyToMany($data['data'], $this->relationships[$relation]);
-						break;
-				}
+				throw new \BadMethodCallException($relation .' has not been defined and cannot be eager-loaded.');
 			}
+
+			switch ($this->relationships[$relation]['type'])
+			{
+				case static::ONE_TO_ONE:
+					$data['data'] = $this->fillOneToOne($data['data'], $this->relationships[$relation]);
+					break;
+				case static::ONE_TO_MANY:
+					$data['data'] = $this->fillOneToMany($data['data'], $this->relationships[$relation], $relation, $this->relationships[$relation]['options']);
+					break;
+				case static::BELONGS_TO:
+					$data['data'] = $this->fillManyToOne($data['data'], $this->relationships[$relation], $relation, $this->relationships[$relation]['options']);
+					break;
+				case static::MANY_TO_MANY:
+					$data['data'] = $this->fillManyToMany($data['data'], $this->relationships[$relation]);
+					break;
+			}
+
 		}
 
 		return $data;
@@ -248,9 +294,18 @@ class EntityManager extends Model
 	 *
 	 * @return array
 	 */
-	public function fillOneToMany(array $entities, array $info, string $relation)
+	public function fillOneToMany($entities, array $info, string $relation, array $options)
 	{
 		if (empty($entities)) return $entities;
+
+		$class = $info['class'];
+		$model = new $class();
+		$wasSingle = is_object($entities);
+
+		if ($wasSingle)
+		{
+			$entities = [$entities];
+		}
 
 		// Rebuild the array so that the keys are the category id for easier assignment.
 		$newEntities = [];
@@ -268,15 +323,88 @@ class EntityManager extends Model
 			$entityIDs[] = $entity->{$info['local']};
 		}
 
+		// Make sure the class we're eager-loading
+		// has a chance to load it's own...
+		if (! empty($options['with']) && $model instanceof EntityManager)
+		{
+			$with = is_array($options['with'])
+				? $options['with']
+				: [$options['with']];
+			$model = $model->with(...$with);
+		}
+
 		// Get the related entities
-		$relatives = $this->whereIn($info['foreign'], $entityIDs)->findAll();
+		$relatives = $model->whereIn($info['foreign'], $entityIDs)->findAll();
 
 		foreach ($relatives as $relative)
 		{
 			$entities[$relative->{$info['foreign']}]->{$relation}[$relative->{$info['local']}] = $relative;
 		}
 
-		return $entities;
+		return $wasSingle ? array_shift($entities) : $entities;
+	}
+
+	/**
+	 * Finds any entities in a Many to One (or BelongsTo) relation.
+	 *
+	 * @param        $entities
+	 * @param array  $info
+	 * @param string $relation
+	 * @param array  $options
+	 *
+	 * @return array
+	 */
+	public function fillManyToOne($entities, array $info, string $relation, array $options)
+	{
+		if (empty($entities)) return $entities;
+
+		$class = $info['class'];
+		$model = new $class();
+		$wasSingle = is_object($entities);
+
+		if ($wasSingle)
+		{
+			$entities = [$entities];
+		}
+
+		// Collect the unique entity id's to retrieve
+		$foreignIDs = [];
+		foreach ($entities as $entity)
+		{
+			$foreignIDs[] = $entity->{$info['local']} ?? null;
+		}
+		$foreignIDs = array_unique($foreignIDs);
+
+		// Make sure the class we're eager-loading
+		// has a chance to load it's own...
+		if (! empty($options['with']) && $model instanceof EntityManager)
+		{
+			$with = is_array($options['with'])
+				? $options['with']
+				: [$options['with']];
+			$model = $model->with(...$with);
+		}
+
+		// Fetch all of the related entities
+		$relatives = $model->find($foreignIDs);
+
+		// Key the entity array so it's easier to fill
+		$newRelatives = [];
+		foreach ($relatives as $relative)
+		{
+			$id = $relative->{$info['foreign']};
+			$newRelatives[$id] = $relative;
+		}
+		unset($relatives);
+
+		// Stitch the related entities back into the correct parents.
+		foreach ($entities as $entity)
+		{
+			$relatedID = $entity->{$info['local']};
+			$entity->{$relation} = $newRelatives[$relatedID];
+		}
+
+		return $wasSingle ? array_shift($entities) : $entities;
 	}
 
 }

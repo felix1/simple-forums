@@ -44,6 +44,7 @@ class ForumManager extends EntityManager
 	protected function initialize()
 	{
 		$this->hasMany(ForumManager::class);
+		$this->hasMany(ThreadManager::class, 'forum_id', 'id', 'threads', ['with' => 'user']);
 	}
 
 	//--------------------------------------------------------------------

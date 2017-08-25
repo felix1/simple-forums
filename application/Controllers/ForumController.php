@@ -1,7 +1,7 @@
 <?php namespace App\Controllers;
 
 use App\Domains\Forums\ForumManager;
-use App\Domains\Forums\ThreadModel;
+use App\Domains\Forums\ThreadManager;
 use App\Domains\Posts\PostModel;
 use Config\Services;
 
@@ -13,7 +13,7 @@ class ForumController extends BaseController
 	protected $forums;
 
 	/**
-	 * @var \App\Domains\Forums\ThreadModel
+	 * @var \App\Domains\Forums\ThreadManager
 	 */
 	protected $threads;
 
@@ -22,7 +22,7 @@ class ForumController extends BaseController
 		parent::__construct(...$params);
 
 		$this->forums = new ForumManager();
-		$this->threads = new ThreadModel();
+		$this->threads = new ThreadManager();
 	}
 
 	/**
@@ -62,14 +62,13 @@ class ForumController extends BaseController
 	public function showForum(string $slug)
 	{
 		$id = (int)$slug;
-		$forum = $this->forums->find($id);
-
-		$threads = $this->threads->findForForum($id);
-		$threads = $this->threads->fillUsers($threads);
+		$forum = $this->forums
+			->with('threads')
+			->find($id);
 
 		echo $this->render('forums/show', [
 			'forum'     => $forum,
-			'threads'   => $threads,
+			'threads'   => $forum->threads,
 			'pager'     => $this->threads->pager,
 		]);
 	}

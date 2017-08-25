@@ -6,7 +6,7 @@ use App\Domains\Forums\Thread;
 use CodeIgniter\Database\Seeder;
 use App\Domains\Forums\PostModel;
 use App\Domains\Forums\ForumManager;
-use App\Domains\Forums\ThreadModel;
+use App\Domains\Forums\ThreadManager;
 
 class DevSeeder extends Seeder
 {
@@ -19,7 +19,7 @@ class DevSeeder extends Seeder
 	{
 		$this->forumModel  = new ForumManager();
 		$this->postModel   = new PostModel();
-		$this->threadModel = new ThreadModel();
+		$this->threadModel = new ThreadManager();
 		$this->faker       = \Faker\Factory::create();
 
 		// WE don't want to validate our data for this...

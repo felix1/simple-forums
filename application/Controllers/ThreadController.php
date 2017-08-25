@@ -1,13 +1,13 @@
 <?php namespace App\Controllers;
 
-use App\Domains\Forums\ThreadModel;
+use App\Domains\Forums\ThreadManager;
 use App\Domains\Posts\PostModel;
 use CodeIgniter\PageNotFoundException;
 
 class ThreadController extends BaseController
 {
 	/**
-	 * @var \App\Domains\Forums\ThreadModel
+	 * @var \App\Domains\Forums\ThreadManager
 	 */
 	protected $threadModel;
 
@@ -15,7 +15,7 @@ class ThreadController extends BaseController
 	{
 		parent::__construct(...$params);
 
-		$this->threadModel = new ThreadModel();
+		$this->threadModel = new ThreadManager();
 	}
 
 	/**
