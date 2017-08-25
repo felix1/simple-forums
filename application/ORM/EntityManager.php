@@ -111,7 +111,7 @@ class EntityManager extends Model
 		$this->defineRelationship(static::BELONGS_TO, $className, $foreignKey, $localKey, $alias, $options);
 	}
 
-	public function hasManyToMany()
+	public function hasAndBelongsToMany()
 	{
 		throw new \BadMethodCallException('Many to Many relationship are not implemented yet.');
 	}
