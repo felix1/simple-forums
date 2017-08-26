@@ -279,7 +279,7 @@ class EntityManager extends Model
 		$eagerRelatives = $this->eagerLoad ?? [];
 		$this->eagerLoad = null;
 
-		foreach ($this->relationships as $alias => $relationship)
+		foreach ($entities[0]->relatives as $alias => $relationship)
 		{
 			if (! in_array($alias, $eagerRelatives)) continue;
 
@@ -309,9 +309,8 @@ class EntityManager extends Model
 	/**
 	 * Finds any entities in a one-to-many relationship with the passed in entities.
 	 *
-	 * @param array  $entities
-	 * @param array  $info
-	 * @param string $relation
+	 * @param array                                $entities
+	 * @param \Myth\ORM\Relationships\Relationship $relationship
 	 *
 	 * @return array
 	 */
@@ -370,18 +369,16 @@ class EntityManager extends Model
 	/**
 	 * Finds any entities in a Many to One (or BelongsTo) relation.
 	 *
-	 * @param        $entities
-	 * @param array  $info
-	 * @param string $relation
-	 * @param array  $options
+	 * @param                                      $entities
+	 * @param \Myth\ORM\Relationships\Relationship $relationship
 	 *
 	 * @return array
 	 */
-	public function fillManyToOne($entities, array $info, string $relation, array $options)
+	public function fillManyToOne($entities, Relationship $relationship)
 	{
 		if (empty($entities)) return $entities;
 
-		$class = $info['class'];
+		$class = $relationship->getModelName();
 		$model = new $class();
 		$wasSingle = is_object($entities);
 
@@ -394,17 +391,18 @@ class EntityManager extends Model
 		$foreignIDs = [];
 		foreach ($entities as $entity)
 		{
-			$foreignIDs[] = $entity->{$info['local']} ?? null;
+			$foreignIDs[] = $entity->{$relationship->getLocalColumn()} ?? null;
 		}
 		$foreignIDs = array_unique($foreignIDs);
 
 		// Make sure the class we're eager-loading
 		// has a chance to load it's own...
-		if (! empty($options['with']) && $model instanceof EntityManager)
+		if (! empty($relationship->getOption('with')) && $model instanceof EntityManager)
 		{
-			$with = is_array($options['with'])
-				? $options['with']
-				: [$options['with']];
+			$with = $relationship->getOption('with');
+			$with = is_array($with)
+				? $with
+				: [$with];
 			$model = $model->with(...$with);
 		}
 
@@ -415,7 +413,7 @@ class EntityManager extends Model
 		$newRelatives = [];
 		foreach ($relatives as $relative)
 		{
-			$id = $relative->{$info['foreign']};
+			$id = $relative->{$relationship->getJoinColumn()};
 			$newRelatives[$id] = $relative;
 		}
 		unset($relatives);
@@ -423,8 +421,8 @@ class EntityManager extends Model
 		// Stitch the related entities back into the correct parents.
 		foreach ($entities as $entity)
 		{
-			$relatedID = $entity->{$info['local']};
-			$entity->{$relation} = $newRelatives[$relatedID];
+			$relatedID = $entity->{$relationship->getLocalColumn()};
+			$entity->{$relationship->getRelation()} = $newRelatives[$relatedID];
 		}
 
 		return $wasSingle ? array_shift($entities) : $entities;
