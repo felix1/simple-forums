@@ -1,6 +1,7 @@
-<?php namespace App\ORM;
+<?php namespace Myth\ORM;
 
 use CodeIgniter\Model;
+use Myth\ORM\Relationships\Relationship;
 
 class EntityManager extends Model
 {
@@ -129,13 +130,13 @@ class EntityManager extends Model
 	{
 		$alias = $this->determineAlias($alias, $className, $type);
 
-		$this->relationships[$alias] = [
-			'class'     => $className,
-			'foreign'   => $this->determineForeignKey($foreignKey, $type),
-			'local'     => $this->determineLocalKey($localKey, $type, $className),
-			'type'      => $type,
-			'options'   => $options
-		];
+		$this->relationships[$alias] = (new Relationship())
+			->setModelName($className)
+			->setJoinColumn($this->determineForeignKey($foreignKey, $type))
+			->setLocalColumn($this->determineLocalKey($localKey, $type, $className))
+			->setType($type)
+			->setRelation($alias)
+			->setOptions($options);
 	}
 
 	/**
@@ -249,32 +250,52 @@ class EntityManager extends Model
 	 */
 	protected function fillRelations(array $data)
 	{
-		if (empty($this->eagerLoad)) return $data;
+		if (empty($data['data'])) return $data;
 
-		// Don't let it get into a loop...
-		$relations = $this->eagerLoad;
-		$this->eagerLoad = null;
-
-		foreach ($relations as $relation)
+		$entities = $data['data'];
+		if (is_object($entities))
 		{
-			if (! array_key_exists($relation, $this->relationships))
+			$entities = [$entities];
+		}
+
+		// Ensure a relationship collection exists
+		// on each entity for the related types
+		// to allow lazyl oading, pagination, etc.
+		foreach ($entities as $entity)
+		{
+			$copy = [];
+			// Ensure we have fresh copies, not references
+			foreach ($this->relationships as $alias => &$relationship)
 			{
-				throw new \BadMethodCallException($relation .' has not been defined and cannot be eager-loaded.');
+				$copy[$alias] = clone $relationship;
 			}
 
-			switch ($this->relationships[$relation]['type'])
+			$entity->relatives = $copy;
+			unset($copy);
+		}
+
+		// Now handle any eager-loading of relationships
+		// for better performance.
+		$eagerRelatives = $this->eagerLoad ?? [];
+		$this->eagerLoad = null;
+
+		foreach ($this->relationships as $alias => $relationship)
+		{
+			if (! in_array($alias, $eagerRelatives)) continue;
+
+			switch ($relationship->getType())
 			{
 				case static::ONE_TO_ONE:
-					$data['data'] = $this->fillOneToOne($data['data'], $this->relationships[$relation]);
+					$data['data'] = $this->fillOneToOne($data['data'], $relationship);
 					break;
 				case static::ONE_TO_MANY:
-					$data['data'] = $this->fillOneToMany($data['data'], $this->relationships[$relation], $relation, $this->relationships[$relation]['options']);
+					$data['data'] = $this->fillOneToMany($data['data'], $relationship);
 					break;
 				case static::BELONGS_TO:
-					$data['data'] = $this->fillManyToOne($data['data'], $this->relationships[$relation], $relation, $this->relationships[$relation]['options']);
+					$data['data'] = $this->fillManyToOne($data['data'], $relationship);
 					break;
 				case static::MANY_TO_MANY:
-					$data['data'] = $this->fillManyToMany($data['data'], $this->relationships[$relation]);
+					$data['data'] = $this->fillManyToMany($data['data'], $relationship);
 					break;
 			}
 
@@ -294,11 +315,11 @@ class EntityManager extends Model
 	 *
 	 * @return array
 	 */
-	public function fillOneToMany($entities, array $info, string $relation, array $options)
+	public function fillOneToMany($entities, Relationship $relationship)
 	{
 		if (empty($entities)) return $entities;
 
-		$class = $info['class'];
+		$class = $relationship->getModelName();
 		$model = new $class();
 		$wasSingle = is_object($entities);
 
@@ -311,7 +332,7 @@ class EntityManager extends Model
 		$newEntities = [];
 		foreach ($entities as $entity)
 		{
-			$newEntities[$entity->{$info['local']}] = $entity;
+			$newEntities[$entity->{$relationship->getLocalColumn()}] = $entity;
 		}
 		$entities = $newEntities;
 		unset($newEntities);
@@ -320,25 +341,27 @@ class EntityManager extends Model
 		$entityIDs = [];
 		foreach ($entities as $entity)
 		{
-			$entityIDs[] = $entity->{$info['local']};
+			$entityIDs[] = $entity->{$relationship->getLocalColumn()};
 		}
 
 		// Make sure the class we're eager-loading
 		// has a chance to load it's own...
-		if (! empty($options['with']) && $model instanceof EntityManager)
+		if (! empty($relationship->getOption('with')) && $model instanceof EntityManager)
 		{
-			$with = is_array($options['with'])
-				? $options['with']
-				: [$options['with']];
+			$with = $relationship->getOption('with');
+			$with = is_array($with)
+				? $with
+				: [$with];
 			$model = $model->with(...$with);
 		}
 
 		// Get the related entities
-		$relatives = $model->whereIn($info['foreign'], $entityIDs)->findAll();
+		$relatives = $model->whereIn($relationship->getJoinColumn(), $entityIDs)->findAll();
 
 		foreach ($relatives as $relative)
 		{
-			$entities[$relative->{$info['foreign']}]->{$relation}[$relative->{$info['local']}] = $relative;
+			$relID = $relative->{$relationship->getJoinColumn()};
+			$entities[$relID]->relatives[$relationship->getRelation()]->add($relative);
 		}
 
 		return $wasSingle ? array_shift($entities) : $entities;

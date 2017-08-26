@@ -1,6 +1,6 @@
 <?php namespace App\Domains\Forums;
 
-use CodeIgniter\Entity;
+use Myth\ORM\Entity;
 
 /**
  * A Forum is the top level organizational entity
@@ -25,22 +25,6 @@ class Forum extends Entity
 	protected $created_at;
 	protected $updated_at;
 	protected $deleted_at;
-
-	/**
-	 * Holds any child forums that
-	 * were populated by the Manager class.
-	 *
-	 * @var array
-	 */
-	public $forums = [];
-
-	/**
-	 * Holds any child threads that
-	 * were populated by the Manager class.
-	 *
-	 * @var array
-	 */
-	public $threads = [];
 
 	/**
 	 * Maps names used in sets and gets against unique

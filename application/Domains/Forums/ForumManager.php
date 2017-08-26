@@ -1,6 +1,6 @@
 <?php namespace App\Domains\Forums;
 
-use App\ORM\EntityManager;
+use Myth\ORM\EntityManager;
 
 /**
  * ForumModel Model
