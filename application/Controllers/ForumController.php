@@ -48,7 +48,7 @@ class ForumController extends BaseController
 	public function showRecent()
 	{
 		echo $this->render('forums/recent', [
-			'threads'       => $this->threads->paginate(20),
+			'threads'       => $this->threads->with('user')->paginate(20),
 			'pager'         => $this->threads->pager,
 			'totalThreads'  => $this->threads->totalThreads(),
 		]);

@@ -11,7 +11,7 @@
 					<div class="col">
 						<p class="thread-title">
 							<a href="<?= $thread->link() ?>"><?= esc($thread->title) ?></a>
-							<p class="small">1 day ago by Some User</p>
+							<p class="small"><?= $thread->created_at->humanize() ?> by <?= $thread->user->username ?? 'Someone' ?></p>
 						</p>
 					</div>
 					<div class="col-2 text-right">

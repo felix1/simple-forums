@@ -39,17 +39,17 @@ class Entity extends \CodeIgniter\Entity
 			$result = $this->$method();
 		}
 
-		// Is this a relationship?
-		else if (array_key_exists($key, $this->relatives))
-		{
-			return $this->relatives[$key]->fetch();
-		}
-
-		// Otherwise return the protected property
+		// Feturn the protected property
 		// if it exists.
 		else if (property_exists($this, $key))
 		{
 			$result = $this->$key;
+		}
+
+		// Is this a relationship?
+		else if (array_key_exists($key, $this->relatives))
+		{
+			return $this->relatives[$key]->fetch();
 		}
 
 		// Do we need to mutate this into a date?

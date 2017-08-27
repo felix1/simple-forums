@@ -2,9 +2,8 @@
 
 use App\Domains\Posts\Post;
 use App\Domains\Posts\PostModel;
-use App\Domains\Users\User;
-use CodeIgniter\Entity;
 use CodeIgniter\I18n\Time;
+use Myth\ORM\Entity;
 
 /**
  * A Thread holds many posts around a single topic (hopefully!).
@@ -50,23 +49,15 @@ class Thread extends Entity
 	protected $user;
 
 	/**
-	 * Maps names used in sets and gets against unique
-	 * names within the class, allowing independence from
-	 * database column names.
-	 *
-	 * Example:
-	 *  $datamap = [
-	 *      'db_name' => 'class_name'
-	 *  ];
-	 *
-	 * @var array
-	 */
-	protected $datamap = [];
-
-	/**
 	 * @var PostModel
 	 */
 	protected $postModel;
+
+	protected $_options = [
+		'datamap' => [],
+		'dates'   => ['created_at', 'updated_at', 'deleted_at'],
+		'casts'   => [],
+	];
 
 	/**
 	 * Sets the PostModel to use.
@@ -113,7 +104,7 @@ class Thread extends Entity
 		if (! $this->firstPostCache instanceof Post)
 		{
 			$this->ensurePostModel();
-			$this->firstPostCache  = $this->postModel->find($this->first_post);
+			$this->firstPostCache = $this->postModel->find($this->first_post);
 			$this->firstPostCache = $this->postModel->fillUsers([$this->firstPostCache])[0];
 		}
 
@@ -147,7 +138,7 @@ class Thread extends Entity
 		$this->ensurePostModel();
 
 		$posts = $this->postModel->where('id !=', $this->first_post)
-								  ->where('thread_id', $this->id)
+		                         ->where('thread_id', $this->id)
 		                         ->orderBy('created_at', 'desc')
 		                         ->paginate($perPage);
 
@@ -184,13 +175,13 @@ class Thread extends Entity
 		// Only 1 post?
 		if ($this->last_post === $this->first_post)
 		{
-			$date = Time::parse($this->created_at);
-			$summary = $date->humanize() ." by <a href='{$this->user->link()}'>{$this->user->username}</a>";
+			$date    = Time::parse($this->created_at);
+			$summary = $date->humanize()." by <a href='{$this->user->link()}'>{$this->user->username}</a>";
 		}
 		// Multiple posts..
 		else
 		{
-			$date = Time::parse($this->lastPost()->created_at);
+			$date    = Time::parse($this->lastPost()->created_at);
 			$summary = "<a href='{$this->lastPost()->user->link()}'><i class=\"fa fa-reply\" aria-hidden=\"true\"></i>{$this->lastPost()->user->username}</a> replied {$date->humanize()}";
 		}
 
