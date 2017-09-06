@@ -15,6 +15,7 @@ class User extends Entity
 	protected $id;
 	protected $email;
 	protected $username;
+	protected $avatar;
 	protected $password_hash;
 	protected $reset_hash;
 	protected $activate_hash;
