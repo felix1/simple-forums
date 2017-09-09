@@ -38,7 +38,7 @@ class FlatGroupsModel extends Model {
 		    'group_id'  => (int)$group_id
 	    ];
 
-		return $this->db->insert('auth_groups_users', $data);
+		return $this->db->table('auth_groups_users')->insert($data);
 	}
 
 	//--------------------------------------------------------------------
@@ -53,10 +53,11 @@ class FlatGroupsModel extends Model {
 	 */
 	public function removeUserFromGroup($user_id, $group_id)
 	{
-	    return $this->db->where([
+	    return $this->db->table('auth_groups_users')
+			->where([
 		    'user_id' => (int)$user_id,
 		    'group_id' => (int)$group_id
-	    ])->delete('auth_groups_users');
+	    ])->delete();
 	}
 
 	//--------------------------------------------------------------------
@@ -85,11 +86,11 @@ class FlatGroupsModel extends Model {
 	 */
 	public function getGroupsForUser($user_id)
 	{
-	    return $this->db->select('auth_groups_users.*, auth_groups.name, auth_groups.description')
+	    return $this->select('auth_groups_users.*, auth_groups.name, auth_groups.description')
 		            ->join('auth_groups_users', 'auth_groups_users.group_id = auth_groups.id', 'left')
 		            ->where('user_id', $user_id)
 		            ->asArray()
-		            ->find_all();
+		            ->findAll();
 	}
 
 	//--------------------------------------------------------------------

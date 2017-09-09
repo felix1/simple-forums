@@ -112,11 +112,15 @@ class FlatAuthorization implements AuthorizeInterface {
 			return false;
 		}
 
+		$ids   = array_column($user_groups, 'group_id');
+		$names = array_column($user_groups, 'name');
+
 		foreach ( $groups as $group )
 		{
+			$group = strtolower($group);
+
 			if (is_numeric($group))
 			{
-				$ids = array_column($user_groups, 'id');
 				if (in_array($group, $ids))
 				{
 					return true;
@@ -125,8 +129,7 @@ class FlatAuthorization implements AuthorizeInterface {
 
 			else if (is_string($group))
 			{
-				$ids = array_column($user_groups, 'name');
-				if (in_array($group, $ids))
+				if (in_array($group, $names))
 				{
 					return true;
 				}
@@ -181,14 +184,14 @@ class FlatAuthorization implements AuthorizeInterface {
 	/**
 	 * Makes a member a part of a group.
 	 *
-	 * @param $user_id
+	 * @param $userID
 	 * @param $group // Either ID or name
 	 *
 	 * @return bool
 	 */
-	public function addUserToGroup( $user_id, $group )
+	public function addUserToGroup($userID, $group)
 	{
-		if (empty($user_id) || ! is_numeric($user_id))
+		if (empty($userID) || ! is_numeric($userID))
 		{
 			return null;
 		}
@@ -198,7 +201,7 @@ class FlatAuthorization implements AuthorizeInterface {
 			return null;
 		}
 
-		if (! Events::trigger('beforeAddUserToGroup', [$user_id, $group]))
+		if (! Events::trigger('beforeAddUserToGroup', [$userID, $group]))
 		{
 			return false;
 		}
@@ -211,14 +214,14 @@ class FlatAuthorization implements AuthorizeInterface {
 			return null;
 		}
 
-		if ( ! $this->groupModel->addUserToGroup( (int)$user_id, (int)$group_id ) )
+		if ( ! $this->groupModel->addUserToGroup( (int)$userID, (int)$group_id ) )
 		{
 			$this->error = $this->groupModel->error();
 
 			return FALSE;
 		}
 
-		Events::trigger('didAddUserToGroup', [$user_id, $group]);
+		Events::trigger('didAddUserToGroup', [$userID, $group]);
 
 		return TRUE;
 	}
@@ -617,23 +620,25 @@ class FlatAuthorization implements AuthorizeInterface {
 	 *
 	 * @return int|false
 	 */
-	protected function getGroupID( $group )
+	protected function getGroupID($group)
 	{
+		$group = strtolower($group);
+
 		if (is_numeric($group))
 		{
 			return (int)$group;
 		}
 
-		$g = $this->groupModel->find_by( 'name', $group );
+		$g = $this->groupModel->findWhere('name', $group);
 
-		if ( ! $g )
+		if (! $g)
 		{
 			$this->error = lang('auth.group_not_found');
 
 			return FALSE;
 		}
 
-		return (int)$g->id;
+		return (int)$g[0]['id'];
 	}
 
 	//--------------------------------------------------------------------

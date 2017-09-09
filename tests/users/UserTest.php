@@ -1,9 +1,29 @@
 <?php
 
+use Mockery as m;
 use App\Domains\Users\User;
+use Config\Services;
+use Myth\Auth\Authorize\FlatAuthorization;
+use Myth\Auth\Authenticate\LocalAuthentication;
 
-class UserTest extends CIUnitTestCase
+class UserTest extends CIDatabaseTestCase
 {
+	protected $authorization;
+
+	protected $authentication;
+
+	protected $basePath = APPPATH .'Database';
+	protected $namespace = 'App';
+
+	public function setUp()
+	{
+		parent::setUp();
+
+//		$this->authorization  = m::mock(FlatAuthorization::class);
+//		$this->authentication = m::mock(LocalAuthentication::class);
+	}
+
+
 	/**
 	 * @expectedException \App\Exceptions\ValidationException
 	 */
@@ -54,5 +74,238 @@ class UserTest extends CIUnitTestCase
 		$this->assertEquals('/img/avatars/franky.jpg', $user->avatar());
 	}
 
+	public function testBanUser()
+	{
+		$user = new User();
 
+		$user->banUser('third strike');
+
+		$this->assertEquals('banned', $this->getPrivateProperty($user, 'status'));
+		$this->assertEquals('third strike', $this->getPrivateProperty($user, 'status_message'));
+	}
+
+	public function testIsBanned()
+	{
+		$user = new User();
+
+		$this->assertFalse($user->isBanned());
+
+		$user->banUser('third strike');
+		$this->assertTrue($user->isBanned());
+
+		$user->removeBan();
+		$this->assertFalse($user->isBanned());
+	}
+
+	public function testIsAdminTrue()
+	{
+		$this->hasInDatabase('auth_groups_users', [
+			'group_id' => 1,
+			'user_id' => 1
+		]);
+
+		$user = new User([
+			'id' => 1
+		]);
+
+		$this->assertTrue($user->isAdmin());
+	}
+
+	public function testIsAdminFalse()
+	{
+		$this->hasInDatabase('auth_groups_users', [
+			'group_id' => 3,
+			'user_id' => 1
+		]);
+
+		$user = new User([
+			'id' => 1
+		]);
+
+		$this->assertFalse($user->isAdmin());
+	}
+
+	public function testIsModeratorTrue()
+	{
+		$this->hasInDatabase('auth_groups_users', [
+			'group_id' => 2,
+			'user_id' => 1
+		]);
+
+		$user = new User([
+			'id' => 1
+		]);
+
+		$this->assertTrue($user->isModerator());
+	}
+
+	public function testIsModeratorFalse()
+	{
+		$this->hasInDatabase('auth_groups_users', [
+			'group_id' => 3,
+			'user_id' => 1
+		]);
+
+		$user = new User([
+			'id' => 1
+		]);
+
+		$this->assertFalse($user->isModerator());
+	}
+
+	public function testInGroupNumeric()
+	{
+		$this->hasInDatabase('auth_groups_users', [
+			'group_id' => 2,
+			'user_id' => 1
+		]);
+
+		$user = new User([
+			'id' => 1
+		]);
+
+		$this->assertTrue($user->inGroup(2));
+	}
+
+	public function testInGroupNamed()
+	{
+		$this->hasInDatabase('auth_groups_users', [
+			'group_id' => 2,
+			'user_id' => 1
+		]);
+
+		$user = new User([
+			'id' => 1
+		]);
+
+		$this->assertTrue($user->inGroup('moderators'));
+	}
+
+	public function testInGroupNamedMixedCase()
+	{
+		$this->hasInDatabase('auth_groups_users', [
+			'group_id' => 2,
+			'user_id' => 1
+		]);
+
+		$user = new User([
+			'id' => 1
+		]);
+
+		$this->assertTrue($user->inGroup('Moderators'));
+	}
+
+	public function testAdduserToGroupNumeric()
+	{
+		$this->dontSeeInDatabase('auth_groups_users', [
+			'group_id' => 2,
+			'user_id' => 1
+		]);
+
+		$user = new User([
+			'id' => 1
+		]);
+
+		$user->addToGroup(1);
+
+		$this->seeInDatabase('auth_groups_users', [
+			'group_id' => 1,
+			'user_id' => 1
+		]);
+	}
+
+	public function testAdduserToGroupNamed()
+	{
+		$this->dontSeeInDatabase('auth_groups_users', [
+			'group_id' => 2,
+			'user_id' => 1
+		]);
+
+		$user = new User([
+			'id' => 1
+		]);
+
+		$user->addToGroup('moderators');
+
+		$this->seeInDatabase('auth_groups_users', [
+			'group_id' => 2,
+			'user_id' => 1
+		]);
+	}
+
+	public function testAdduserToGroupNamedMixedCase()
+	{
+		$this->dontSeeInDatabase('auth_groups_users', [
+			'group_id' => 2,
+			'user_id' => 1
+		]);
+
+		$user = new User([
+			'id' => 1
+		]);
+
+		$user->addToGroup('Moderators');
+
+		$this->seeInDatabase('auth_groups_users', [
+			'group_id' => 2,
+			'user_id' => 1
+		]);
+	}
+
+	public function testRemoveFromGroupNumeric()
+	{
+		$this->hasInDatabase('auth_groups_users', [
+			'group_id' => 2,
+			'user_id' => 1
+		]);
+
+		$user = new User([
+			'id' => 1
+		]);
+
+		$user->removeFromGroup(2);
+
+		$this->dontSeeInDatabase('auth_groups_users', [
+			'group_id' => 2,
+			'user_id' => 1
+		]);
+	}
+
+	public function testRemoveFromGroupNamed()
+	{
+		$this->hasInDatabase('auth_groups_users', [
+			'group_id' => 2,
+			'user_id' => 1
+		]);
+
+		$user = new User([
+			'id' => 1
+		]);
+
+		$user->removeFromGroup('moderators');
+
+		$this->dontSeeInDatabase('auth_groups_users', [
+			'group_id' => 2,
+			'user_id' => 1
+		]);
+	}
+
+	public function testRemoveFromGroupNamedMixedCase()
+	{
+		$this->hasInDatabase('auth_groups_users', [
+			'group_id' => 2,
+			'user_id' => 1
+		]);
+
+		$user = new User([
+			'id' => 1
+		]);
+
+		$user->removeFromGroup('Moderators');
+
+		$this->dontSeeInDatabase('auth_groups_users', [
+			'group_id' => 2,
+			'user_id' => 1
+		]);
+	}
 }

@@ -75,12 +75,12 @@ interface AuthorizeInterface  {
 	/**
 	 * Makes a member a part of a group.
 	 *
-	 * @param $user_id
+	 * @param $userID
 	 * @param $group        // Either ID or name
 	 *
 	 * @return bool
 	 */
-	public function addUserToGroup($user_id, $group);
+	public function addUserToGroup($userID, $group);
 
 	//--------------------------------------------------------------------
 

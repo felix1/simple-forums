@@ -129,6 +129,19 @@ class User extends Entity
 		return $this->status === 'banned';
 	}
 
+	/**
+	 * Removes the ban status from a user.
+	 *
+	 * @return $this
+	 */
+	public function removeBan()
+	{
+		$this->status = null;
+		$this->status_message = null;
+
+		return $this;
+	}
+
 	//--------------------------------------------------------------------
 	// Authorization Helpers
 	//--------------------------------------------------------------------
