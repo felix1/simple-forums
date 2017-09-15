@@ -29,16 +29,27 @@ class Migration_create_users_table extends Migration
 
 		$this->forge->createTable('users', true);
 
-		// User Meta
+		// User Profile
 		$this->forge->addField([
-			'user_id'    => ['type'       => 'int', 'constraint' => 11, 'unsigned'   => true,],
-			'meta_key'   => ['type'       => 'varchar', 'constraint' => 255,],
-			'meta_value' => ['type' => 'text', 'null' => true,],
+			'user_id'       => ['type' => 'int', 'constraint' => 11, 'unsigned' => true],
+			'phone'         => ['type' => 'varchar', 'constraint' => 20, 'null' => true],
+			'personal_url'  => ['type' => 'varchar', 'constraint' => 255, 'null' => true],
+			'business_url'  => ['type' => 'varchar', 'constraint' => 255, 'null' => true],
+			'facebook_url'  => ['type' => 'varchar', 'constraint' => 255, 'null' => true],
+			'twitter_url'   => ['type' => 'varchar', 'constraint' => 255, 'null' => true],
+			'gplus_url'     => ['type' => 'varchar', 'constraint' => 255, 'null' => true],
+			'about'         => ['type' => 'text', 'null' => true],
+			'social_public' => ['type' => 'tinyint', 'constraint' => 1, 'default' => 1],
+			'show_email'    => ['type' => 'tinyint', 'constraint' => 1, 'default' => 1],
+			'show_phone'    => ['type' => 'tinyint', 'constraint' => 1, 'default' => 1],
+			'views'         => ['type' => 'integer', 'constraint' => 11, 'default' => 0],
+			'created_at'       => ['type' => 'datetime', 'null' => true],
+			'updated_at'       => ['type' => 'datetime', 'null' => true],
 		]);
 
-		$this->forge->addKey(['user_id', 'meta_key'], true);
+		$this->forge->addKey('user_id', true);
 
-		$this->forge->createTable('user_meta', true);
+		$this->forge->createTable('user_profiles', true);
 	}
 
 	//--------------------------------------------------------------------
@@ -46,6 +57,6 @@ class Migration_create_users_table extends Migration
 	public function down()
 	{
 		$this->forge->dropTable('users');
-		$this->forge->dropTable('user_meta');
+		$this->forge->dropTable('user_profiles');
 	}
 }

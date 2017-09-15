@@ -1,6 +1,6 @@
 <?php namespace App\Domains\Posts;
 
-use App\Domains\Users\UserModel;
+use App\Domains\Users\UserManager;
 use CodeIgniter\Model;
 
 /**
@@ -49,7 +49,7 @@ class PostModel extends Model
 	{
 		if (empty($posts)) return $posts;
 
-		$userModel = new UserModel();
+		$userModel = new UserManager();
 
 		// Get a list of thread ids
 		$userIDs = [];

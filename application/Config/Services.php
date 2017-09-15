@@ -1,6 +1,6 @@
 <?php namespace Config;
 
-use App\Domains\Users\UserModel;
+use App\Domains\Users\UserManager;
 use CodeIgniter\Config\Services as CoreServices;
 use Myth\Auth\Authenticate\LocalAuthentication;
 use Myth\Auth\Authorize\FlatAuthorization;
@@ -40,7 +40,7 @@ class Services extends CoreServices
 			return self::getSharedInstance('authentication');
 		}
 
-		return new LocalAuthentication(new Auth(), new UserModel(), new LoginModel());
+		return new LocalAuthentication(new Auth(), new UserManager(), new LoginModel());
 	}
 
 	/**

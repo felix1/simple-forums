@@ -2,7 +2,7 @@
 
 use Myth\ORM\EntityManager;
 use App\Domains\Posts\PostModel;
-use App\Domains\Users\UserModel;
+use App\Domains\Users\UserManager;
 
 /**
  * ThreadModel Model
@@ -43,7 +43,7 @@ class ThreadManager extends EntityManager
 	protected function initialize()
 	{
 		$this->hasMany(PostModel::class);
-		$this->belongsTo(UserModel::class);
+		$this->belongsTo(UserManager::class);
 	}
 
 	/**

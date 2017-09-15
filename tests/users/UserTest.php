@@ -18,9 +18,6 @@ class UserTest extends CIDatabaseTestCase
 	public function setUp()
 	{
 		parent::setUp();
-
-//		$this->authorization  = m::mock(FlatAuthorization::class);
-//		$this->authentication = m::mock(LocalAuthentication::class);
 	}
 
 
@@ -307,5 +304,160 @@ class UserTest extends CIDatabaseTestCase
 			'group_id' => 2,
 			'user_id' => 1
 		]);
+	}
+
+	public function testAddPermissionNumeric()
+	{
+		$user = new User([
+			'id' => 1
+		]);
+
+		$user->addPermission(12);
+
+		$this->seeInDatabase('auth_users_permissions', [
+			'user_id' => 1,
+			'permission_id' => 12
+		]);
+	}
+
+	public function testAddPermissionNumericExists()
+	{
+		$this->hasInDatabase('auth_users_permissions', [
+			'user_id' => 1,
+			'permission_id' => 12
+		]);
+
+		$user = new User([
+			'id' => 1
+		]);
+
+		$user->addPermission(12);
+
+		$this->seeInDatabase('auth_users_permissions', [
+			'user_id' => 1,
+			'permission_id' => 12
+		]);
+	}
+
+	public function testAddPermissionNamed()
+	{
+		$this->hasInDatabase('auth_permissions', [
+			'name' => 'manageUsers'
+		]);
+
+		$user = new User([
+			'id' => 1
+		]);
+
+		$user->addPermission('manageUsers');
+
+		$this->seeInDatabase('auth_users_permissions', [
+			'user_id' => 1,
+			'permission_id' => 1
+		]);
+	}
+
+	public function testRemovePermissionNumeric()
+	{
+		$this->hasInDatabase('auth_users_permissions', [
+			'user_id' => 1,
+			'permission_id' => 12
+		]);
+
+		$user = new User([
+			'id' => 1
+		]);
+
+		$user->removePermission(12);
+
+		$this->dontSeeInDatabase('auth_users_permissions', [
+			'user_id' => 1,
+			'permission_id' => 12
+		]);
+	}
+
+	public function testRemovePermissionNamed()
+	{
+		$this->hasInDatabase('auth_users_permissions', [
+			'user_id' => 1,
+			'permission_id' => 11
+		]);
+		$this->hasInDatabase('auth_permissions', [
+			'id' => 1,
+			'name' => 'manageUsers',
+			'description' => 'Manage users'
+		]);
+
+		$user = new User([
+			'id' => 1
+		]);
+
+		$user->removePermission('manageUsers');
+
+		$this->dontSeeInDatabase('auth_users_permissions', [
+			'user_id' => 1,
+			'permission_id' => 1
+		]);
+	}
+
+	public function testHasUserPermissionNamedTrue()
+	{
+		$this->hasInDatabase('auth_permissions', [
+			'id' => 1,
+			'name' => 'manageUsers',
+			'description' => 'Manage users'
+		]);
+		$this->hasInDatabase('auth_users_permissions', [
+			'user_id' => 1,
+			'permission_id' => 1
+		]);
+
+		$user = new User([
+			'id' => 1
+		]);
+
+		$this->assertTrue($user->hasPermission('manageUsers'));
+	}
+
+	public function testHasUserPermissionNamedFalse()
+	{
+		$this->hasInDatabase('auth_permissions', [
+			'id' => 1,
+			'name' => 'manageUsers',
+			'description' => 'Manage users'
+		]);
+		$this->hasInDatabase('auth_users_permissions', [
+			'user_id' => 1,
+			'permission_id' => 2
+		]);
+
+		$user = new User([
+			'id' => 1
+		]);
+
+		$this->assertFalse($user->hasPermission('manageUsers'));
+	}
+
+	public function testHasGroupPermissionNamedTrue()
+	{
+		$this->hasInDatabase('auth_permissions', [
+			'id' => 1,
+			'name' => 'manageUsers',
+			'description' => 'Manage users'
+		]);
+		$this->hasInDatabase('auth_groups_users', [
+			'group_id' => 3,
+			'user_id' => 1
+		]);
+		$this->hasInDatabase('auth_groups_permissions', [
+			'group_id' => 3,
+			'permission_id' => 1
+		]);
+
+		$user = new User([
+			'id' => 1
+		]);
+
+		$this->assertTrue($user->hasPermission('manageUsers'));
 	}
 }

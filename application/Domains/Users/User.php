@@ -28,6 +28,11 @@ class User extends Entity
 	protected $updated_at;
 
 	/**
+	 * @var \App\Domains\Users\Profile
+	 */
+	public $profile;
+
+	/**
 	 * Maps names used in sets and gets against unique
 	 * names within the class, allowing independence from
 	 * database column names.
@@ -40,6 +45,11 @@ class User extends Entity
 	 * @var array
 	 */
 	protected $datamap = [];
+
+	/**
+	 * @var \Myth\Auth\Authorize\AuthorizeInterface
+	 */
+	protected $authorization;
 
 	/**
 	 * Validates and normalizes the email address before saving it to the Entity.
@@ -153,9 +163,7 @@ class User extends Entity
 	 */
 	public function isAdmin(): bool
 	{
-		$auth = Services::authorization();
-
-		return $auth->inGroup('admins', $this->id);
+		return $this->auth()->inGroup('admins', $this->id);
 	}
 
 	/**
@@ -165,9 +173,7 @@ class User extends Entity
 	 */
 	public function isModerator()
 	{
-		$auth = Services::authorization();
-
-		return $auth->inGroup('moderators', $this->id);
+		return $this->auth()->inGroup('moderators', $this->id);
 	}
 
 	/**
@@ -179,9 +185,7 @@ class User extends Entity
 	 */
 	public function inGroup($group)
 	{
-		$auth = Services::authorization();
-
-		return $auth->inGroup($group, $this->id);
+		return $this->auth()->inGroup($group, $this->id);
 	}
 
 	/**
@@ -193,9 +197,7 @@ class User extends Entity
 	 */
 	public function addToGroup(string $groupName)
 	{
-		$auth = Services::authorization();
-
-		return $auth->addUserToGroup($this->id, $groupName);
+		return $this->auth()->addUserToGroup($this->id, $groupName);
 	}
 
 	/**
@@ -207,9 +209,7 @@ class User extends Entity
 	 */
 	public function removeFromGroup(string $groupName)
 	{
-		$auth = Services::authorization();
-
-		return $auth->removeUserFromGroup($this->id, $groupName);
+		return $this->auth()->removeUserFromGroup($this->id, $groupName);
 	}
 
 	/**
@@ -221,9 +221,7 @@ class User extends Entity
 	 */
 	public function hasPermission(string $permission): bool
 	{
-		$auth = Services::authorization();
-
-		return $auth->hasPermission($permission, $this->id);
+		return $this->auth()->hasPermission($permission, $this->id);
 	}
 
 	/**
@@ -235,9 +233,7 @@ class User extends Entity
 	 */
 	public function addPermission(string $permission)
 	{
-		$auth = Services::authorization();
-
-		return $auth->addPermissionToUser($permission, $this->id);
+		return $this->auth()->addPermissionToUser($permission, $this->id);
 	}
 
 	/**
@@ -249,9 +245,19 @@ class User extends Entity
 	 */
 	public function removePermission(string $permission)
 	{
-		$auth = Services::authorization();
-
-		return $auth->removePermissionFromUser($permission, $this->id);
+		return $this->auth()->removePermissionFromUser($permission, $this->id);
 	}
 
+	/**
+	 * Loads the authorization file, if not already loaded.
+	 */
+	protected function auth()
+	{
+		if (is_null($this->authorization))
+		{
+			$this->authorization = Services::authorization();
+		}
+
+		return $this->authorization;
+	}
 }

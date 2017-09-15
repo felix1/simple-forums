@@ -31,7 +31,7 @@
  * @since       Version 1.0
  */
 use App\Domains\Users\User;
-use App\Domains\Users\UserModel;
+use App\Domains\Users\UserManager;
 use CodeIgniter\HTTP\Request;
 use Config\App;
 use Config\Services;
@@ -60,7 +60,7 @@ class LocalAuthentication implements AuthenticateInterface
 	protected $user;
 
 	/**
-	 * @var \App\Domains\Users\UserModel
+	 * @var \App\Domains\Users\UserManager
 	 */
 	public $userModel;
 
@@ -78,7 +78,7 @@ class LocalAuthentication implements AuthenticateInterface
 
 	//--------------------------------------------------------------------
 
-	public function __construct($config, UserModel $userModel, LoginModel $loginModel)
+	public function __construct($config, UserManager $userModel, LoginModel $loginModel)
 	{
 		$this->config     = $config;
 		$this->userModel  = $userModel;

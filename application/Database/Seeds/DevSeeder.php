@@ -1,10 +1,10 @@
 <?php
 
-use App\Domains\Forums\Post;
+use App\Domains\Posts\Post;
 use App\Domains\Forums\Forum;
 use App\Domains\Forums\Thread;
 use CodeIgniter\Database\Seeder;
-use App\Domains\Forums\PostModel;
+use App\Domains\Posts\PostModel;
 use App\Domains\Forums\ForumManager;
 use App\Domains\Forums\ThreadManager;
 

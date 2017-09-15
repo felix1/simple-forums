@@ -54,6 +54,18 @@ class Migration_create_authorization_tables extends Migration
 		$this->forge->addField($fields);
 		$this->forge->addKey(['group_id', 'user_id']);
 		$this->forge->createTable('auth_groups_users', true);
+
+		/**
+		 * Users/Permissions Table
+		 */
+		$fields = [
+			'user_id' => ['type'  => 'int', 'constraint' => 11, 'unsigned' => true, 'default' => 0],
+			'permission_id' => ['type'  => 'int', 'constraint' => 11, 'unsigned' => true, 'default' => 0],
+		];
+
+		$this->forge->addField($fields);
+		$this->forge->addKey(['user_id', 'permission_id']);
+		$this->forge->createTable('auth_users_permissions');
 	}
 
 	//--------------------------------------------------------------------

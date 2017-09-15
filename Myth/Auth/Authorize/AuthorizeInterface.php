@@ -64,11 +64,11 @@ interface AuthorizeInterface  {
 	 * Checks a user's groups to see if they have the specified permission.
 	 *
 	 * @param int|string $permission
-	 * @param int|string $user_id
+	 * @param int|string $userID
 	 *
 	 * @return mixed
 	 */
-	public function hasPermission($permission, $user_id);
+	public function hasPermission($permission, $userID);
 
 	//--------------------------------------------------------------------
 

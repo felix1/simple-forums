@@ -1,7 +1,7 @@
 <?php namespace Myth\Auth\Controllers;
 
 use App\Domains\Users\User;
-use App\Domains\Users\UserModel;
+use App\Domains\Users\UserManager;
 use App\Controllers\BaseController;
 use Config\Services;
 use \Myth\Auth\Authenticate\LocalAuthentication;

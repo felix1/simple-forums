@@ -58,19 +58,22 @@ class FlatPermissionsModel extends Model {
 	 *
 	 * @return bool
 	 */
-	public function doesUserHavePermission($user_id, $permission_id)
+	public function doesUserGroupHavePermission(int $user_id, int $permission_id): bool
 	{
-		$permissions = $this->db
+		// Check the group
+		$permissions = $this->builder()
 			->join('auth_groups_permissions', 'auth_groups_permissions.permission_id = auth_permissions.id', 'inner')
 			->join('auth_groups_users', 'auth_groups_users.group_id = auth_groups_permissions.group_id', 'inner')
 			->where('auth_groups_users.user_id', (int)$user_id)
-			->asArray()
-			->find_all();
+			->get()
+			->getResultArray();
 
 		if (! $permissions)
 		{
 			return false;
 		}
+
+		$permissions = (array)$permissions;
 
 		$ids = array_column($permissions, 'permission_id');
 
@@ -78,5 +81,60 @@ class FlatPermissionsModel extends Model {
 	}
 
 	//--------------------------------------------------------------------
+
+	/**
+	 * Checks whether a user has a permission directly assigned to them.
+	 *
+	 * @param int $userID
+	 * @param int $permissionID
+	 *
+	 * @return bool
+	 */
+	public function doesUserOwnPermission(int $userID, int $permissionID): bool
+	{
+		$permission = $this->db
+			->table('auth_users_permissions')
+			->where('user_id', $userID)
+			->where('permission_id', $permissionID)
+			->get();
+
+		return ! empty($permission->getFirstRow());
+	}
+
+	/**
+	 * Assigns a permission directly to a single user.
+	 *
+	 * @param int $permissionID
+	 * @param int $userID
+	 *
+	 * @return bool
+	 */
+	public function assignToUser(int $permissionID, int $userID)
+	{
+		return $this->db
+			->table('auth_users_permissions')
+			->insert([
+				'user_id' => $userID,
+				'permission_id' => $permissionID
+			]);
+	}
+
+	/**
+	 * Removes a user-assigned permission from a user.
+	 *
+	 * @param int $permissionID
+	 * @param int $userID
+	 *
+	 * @return mixed
+	 */
+	public function removeFromUser(int $permissionID, int $userID)
+	{
+		return $this->db
+			->table('auth_users_permissions')
+			->delete([
+				'user_id' => $userID,
+				'permission_id' => $permissionID
+			]);
+	}
 
 }
