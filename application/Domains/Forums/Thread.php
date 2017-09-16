@@ -168,20 +168,37 @@ class Thread extends Entity
 		return $this->posts;
 	}
 
+	/**
+	 * Returns the summary line displayed under a thread
+	 * that shows either who started the thread, or who posted last.
+	 *
+	 * @return string
+	 */
 	public function userSummaryLine()
 	{
 		$summary = '';
+
+		if (empty($this->last_post)) return $summary;
 
 		// Only 1 post?
 		if ($this->last_post === $this->first_post)
 		{
 			$date    = Time::parse($this->created_at);
-			$summary = $date->humanize()." by <a href='{$this->user->link()}'>{$this->user->username}</a>";
+			$summary = lang('Threads.userSummarySame', [
+				'date' => $date->humanize(),
+				'link' => $this->user->link(),
+				'user' =>$this->user->username]
+			);
 		}
 		// Multiple posts..
 		else
 		{
 			$date    = Time::parse($this->lastPost()->created_at);
+			$summary = lang('Threads.userSummaryDifferent', [
+				'link' => $this->lastPost()->user->link(),
+				'user' => $this->lastPost()->user->username,
+				'date' => $date->humanize()
+			]);
 			$summary = "<a href='{$this->lastPost()->user->link()}'><i class=\"fa fa-reply\" aria-hidden=\"true\"></i>{$this->lastPost()->user->username}</a> replied {$date->humanize()}";
 		}
 
