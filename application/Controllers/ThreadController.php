@@ -1,7 +1,7 @@
 <?php namespace App\Controllers;
 
 use App\Domains\Forums\ThreadManager;
-use App\Domains\Posts\PostModel;
+use App\Domains\Posts\PostManager;
 use CodeIgniter\PageNotFoundException;
 
 class ThreadController extends BaseController
@@ -32,7 +32,7 @@ class ThreadController extends BaseController
 			throw new PageNotFoundException();
 		}
 
-		$postModel   = new PostModel();
+		$postModel   = new PostManager();
 
 		$thread = $this->threadModel->find($threadID);
 		$thread->setPostModel($postModel);

@@ -1,7 +1,7 @@
 <?php namespace App\Domains\Forums;
 
 use App\Domains\Posts\Post;
-use App\Domains\Posts\PostModel;
+use App\Domains\Posts\PostManager;
 use CodeIgniter\I18n\Time;
 use Myth\ORM\Entity;
 
@@ -49,7 +49,7 @@ class Thread extends Entity
 	protected $user;
 
 	/**
-	 * @var PostModel
+	 * @var PostManager
 	 */
 	protected $postModel;
 
@@ -62,11 +62,11 @@ class Thread extends Entity
 	/**
 	 * Sets the PostModel to use.
 	 *
-	 * @param \App\Domains\Posts\PostModel $model
+	 * @param \App\Domains\Posts\PostManager $model
 	 *
 	 * @return $this
 	 */
-	public function setPostModel(PostModel &$model)
+	public function setPostModel(PostManager &$model)
 	{
 		$this->postModel = $model;
 
@@ -75,9 +75,9 @@ class Thread extends Entity
 
 	protected function ensurePostModel()
 	{
-		if (! $this->postModel instanceof PostModel)
+		if (! $this->postModel instanceof PostManager)
 		{
-			$this->postModel = new PostModel();
+			$this->postModel = new PostManager();
 		}
 	}
 

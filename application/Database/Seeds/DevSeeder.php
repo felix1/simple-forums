@@ -4,7 +4,7 @@ use App\Domains\Posts\Post;
 use App\Domains\Forums\Forum;
 use App\Domains\Forums\Thread;
 use CodeIgniter\Database\Seeder;
-use App\Domains\Posts\PostModel;
+use App\Domains\Posts\PostManager;
 use App\Domains\Forums\ForumManager;
 use App\Domains\Forums\ThreadManager;
 
@@ -18,7 +18,7 @@ class DevSeeder extends Seeder
 	public function run()
 	{
 		$this->forumModel  = new ForumManager();
-		$this->postModel   = new PostModel();
+		$this->postModel   = new PostManager();
 		$this->threadModel = new ThreadManager();
 		$this->faker       = \Faker\Factory::create();
 

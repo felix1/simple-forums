@@ -1,7 +1,7 @@
 <?php namespace App\Domains\Forums;
 
 use Myth\ORM\EntityManager;
-use App\Domains\Posts\PostModel;
+use App\Domains\Posts\PostManager;
 use App\Domains\Users\UserManager;
 
 /**
@@ -42,7 +42,7 @@ class ThreadManager extends EntityManager
 
 	protected function initialize()
 	{
-		$this->hasMany(PostModel::class);
+		$this->hasMany(PostManager::class);
 		$this->belongsTo(UserManager::class);
 	}
 

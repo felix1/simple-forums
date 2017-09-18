@@ -2,7 +2,7 @@
 
 use App\Domains\Forums\ForumManager;
 use App\Domains\Forums\ThreadManager;
-use App\Domains\Posts\PostModel;
+use App\Domains\Posts\PostManager;
 use Config\Services;
 
 class ForumController extends BaseController
