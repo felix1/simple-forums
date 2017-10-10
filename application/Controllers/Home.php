@@ -4,7 +4,7 @@ class Home extends BaseController
 {
 	public function index()
 	{
-		redirect('categories');
+		return redirect('categories');
 	}
 
 	//--------------------------------------------------------------------

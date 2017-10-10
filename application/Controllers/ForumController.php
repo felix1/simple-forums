@@ -3,6 +3,7 @@
 use App\Domains\Forums\ForumManager;
 use App\Domains\Forums\ThreadManager;
 use App\Domains\Posts\PostManager;
+use CodeIgniter\PageNotFoundException;
 use Config\Services;
 
 class ForumController extends BaseController
@@ -30,6 +31,7 @@ class ForumController extends BaseController
 	 */
 	public function showCategories()
 	{
+//		throw new PageNotFoundException();
 		helper('typography');
 
 		$categories = $this->forums
