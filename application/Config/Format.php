@@ -20,7 +20,8 @@ class Format extends BaseConfig
 	*/
 	public $supportedResponseFormats = [
 		'application/json',
-		'application/xml'
+		'application/xml',		// machine-readable XML
+		'text/xml'				// human-readable XML
 	];
 
 	/*
@@ -35,7 +36,8 @@ class Format extends BaseConfig
 	*/
 	public $formatters = [
 		'application/json' => \CodeIgniter\Format\JSONFormatter::class,
-		'application/xml'  => \CodeIgniter\Format\XMLFormatter::class
+		'application/xml'  => \CodeIgniter\Format\XMLFormatter::class,
+		'text/xml'  => \CodeIgniter\Format\XMLFormatter::class,
 	];
 
 	//--------------------------------------------------------------------
@@ -45,7 +47,7 @@ class Format extends BaseConfig
 	 *
 	 * @param string $mime
 	 *
-	 * @return mixed
+	 * @return \CodeIgniter\Format\FormatterInterface
 	 */
 	public function getFormatter(string $mime)
 	{

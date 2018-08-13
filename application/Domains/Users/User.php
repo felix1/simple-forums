@@ -3,7 +3,6 @@
 use App\Exceptions\ValidationException;
 use CodeIgniter\Entity;
 use Config\Services;
-use Myth\Auth\Authenticate\Password;
 
 /**
  * User Entity
@@ -27,24 +26,39 @@ class User extends Entity
 	protected $created_at;
 	protected $updated_at;
 
+	protected $_options = [
+		/*
+		 * Maps names used in sets and gets against unique
+		 * names within the class, allowing independence from
+		 * database column names.
+		 *
+		 * Example:
+		 *  $datamap = [
+		 *      'db_name' => 'class_name'
+		 *  ];
+		 */
+		'datamap' => [],
+
+		/*
+		 * Define properties that are automatically converted to Time instances.
+		 */
+		'dates'   => ['created_at', 'updated_at'],
+
+		/*
+		 * Array of field names and the type of value to cast them as
+		 * when they are accessed.
+		 */
+		'casts'   => [
+			'active'           => 'boolean',
+			'force_pass_reset' => 'boolean',
+			'deleted'          => 'boolean',
+		],
+	];
+
 	/**
 	 * @var \App\Domains\Users\Profile
 	 */
 	public $profile;
-
-	/**
-	 * Maps names used in sets and gets against unique
-	 * names within the class, allowing independence from
-	 * database column names.
-	 *
-	 * Example:
-	 *  $datamap = [
-	 *      'db_name' => 'class_name'
-	 *  ];
-	 *
-	 * @var array
-	 */
-	protected $datamap = [];
 
 	/**
 	 * @var \Myth\Auth\Authorize\AuthorizeInterface
@@ -72,15 +86,49 @@ class User extends Entity
 	}
 
 	/**
-	 * Hashes the passwords and saves it to the Entity.
+	 * Automatically hashes the password when set.
+	 *
+	 * @see https://paragonie.com/blog/2015/04/secure-authentication-php-with-long-term-persistence
 	 *
 	 * @param string $password
-	 *
-	 * @return $this
 	 */
 	public function setPassword(string $password)
 	{
-		$this->password_hash = Password::hashPassword($password);
+		$config = config(Auth::class);
+
+		$this->password_hash = password_hash(
+			base64_encode(
+				hash('sha384', $password, true)
+			),
+			PASSWORD_DEFAULT,
+			['cost' => $config->hashCost]
+		);
+	}
+
+	/**
+	 * Generates a secure hash to use for password reset purposes,
+	 * saves it to the instance.
+	 *
+	 * @return $this
+	 * @throws \Exception
+	 */
+	public function generateResetHash()
+	{
+		$this->reset_hash = bin2hex(random_bytes(16));
+		$this->reset_start_time = date('Y-m-d H:i:s');
+
+		return $this;
+	}
+
+	/**
+	 * Generates a secure random hash to use for account activation.
+	 *
+	 * @return $this
+	 * @throws \Exception
+	 */
+	public function generateActivateHash()
+	{
+		$this->activate_hash = bin2hex(random_bytes(16));
 
 		return $this;
 	}
@@ -115,41 +163,40 @@ class User extends Entity
 	//--------------------------------------------------------------------
 
 	/**
-	 * Bans a user and saves the message to display to the user with the reason for banning.
+	 * Bans a user.
 	 *
-	 * @param string $message
+	 * @param string $reason
 	 *
 	 * @return $this
 	 */
-	public function banUser(string $message)
+	public function ban(string $reason)
 	{
 		$this->status = 'banned';
-		$this->status_message = $message;
+		$this->status_message = $reason;
 
 		return $this;
 	}
 
 	/**
-	 * Is the user currently banned?
+	 * Removes a ban from a user.
+	 *
+	 * @return $this
+	 */
+	public function unBan()
+	{
+		$this->status = $this->status_message = '';
+
+		return $this;
+	}
+
+	/**
+	 * Checks to see if a user has been banned.
 	 *
 	 * @return bool
 	 */
-	public function isBanned()
+	public function isBanned(): bool
 	{
 		return $this->status === 'banned';
-	}
-
-	/**
-	 * Removes the ban status from a user.
-	 *
-	 * @return $this
-	 */
-	public function removeBan()
-	{
-		$this->status = null;
-		$this->status_message = null;
-
-		return $this;
 	}
 
 	//--------------------------------------------------------------------
@@ -246,6 +293,34 @@ class User extends Entity
 	public function removePermission(string $permission)
 	{
 		return $this->auth()->removePermissionFromUser($permission, $this->id);
+	}
+
+	/**
+	 * Returns the user's permissions, automatically
+	 * json_decoding them into an associative array.
+	 *
+	 * @return array|mixed
+	 */
+	public function getPermissions()
+	{
+		return ! empty($this->permissions)
+			? json_decode($this->permissions, true)
+			: [];
+	}
+
+	/**
+	 * Stores the permissions, automatically json_encoding
+	 * them for saving.
+	 *
+	 * @param array $permissions
+	 *
+	 * @return $this
+	 */
+	public function setPermissions(array $permissions)
+	{
+		$this->permissions = json_encode($permissions);
+
+		return $this;
 	}
 
 	/**

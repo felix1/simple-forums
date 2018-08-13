@@ -33,13 +33,9 @@ class BaseController extends Controller
 
 	//--------------------------------------------------------------------
 
-	public function __construct(...$params)
+	public function __construct()
 	{
-		parent::__construct(...$params);
-
 		$this->renderer = Services::renderer(ROOTPATH."themes/{$this->theme}/");
-
-		$this->setupAuthClasses();
 	}
 
 	public function setData(array $data)
@@ -57,6 +53,8 @@ class BaseController extends Controller
 	 */
 	public function render(string $view, array $data = [])
 	{
+		$this->setupAuthClasses();
+
 		$data = array_merge($data, $this->data);
 
 		// Build our notices from the theme's view file.
@@ -154,8 +152,8 @@ class BaseController extends Controller
 			{
 				// Split out our message parts
 				$tempMessage       = explode('::', $message);
-				$return['type']    = $tempMessage[0];
-				$return['message'] = $tempMessage[1];
+				$return['message'] = $tempMessage[0];
+				$return['type']    = $tempMessage[1] ?? 'success';
 
 				unset($tempMessage);
 			}

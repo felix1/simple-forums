@@ -42,7 +42,7 @@ define('FCPATH', realpath($public).DIRECTORY_SEPARATOR);
 // Ensure the current directory is pointing to the front controller's directory
 chdir('public');
 
-$app = require rtrim($paths->systemDirectory,'/ ').'/bootstrap.php';
+$app = require rtrim('../' .$paths->systemDirectory,'/ ').'/bootstrap.php';
 
 // Grab our Console
 $console = new \CodeIgniter\CLI\Console($app);

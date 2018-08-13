@@ -1,13 +1,14 @@
 <?php namespace Config;
 
-use App\Domains\Users\UserManager;
+use App\Domains\Users\UserModel;
 use CodeIgniter\Config\Services as CoreServices;
-use Myth\Auth\Authenticate\LocalAuthentication;
-use Myth\Auth\Authorize\FlatAuthorization;
-use Myth\Auth\Authorize\FlatGroupsModel;
-use Myth\Auth\Authorize\FlatPermissionsModel;
+use CodeIgniter\Config\BaseConfig;
+use CodeIgniter\Model;
+use Myth\Auth\Authorization\FlatAuthorization;
+use Myth\Auth\Authorization\GroupModel;
 use Myth\Auth\Config\Auth;
 use Myth\Auth\Models\LoginModel;
+use Myth\Authorization\PermissionModel;
 
 require_once BASEPATH.'Config/Services.php';
 
@@ -26,37 +27,97 @@ require_once BASEPATH.'Config/Services.php';
  */
 class Services extends CoreServices
 {
-	/**
-	 * Return the authentication library.
-	 *
-	 * @param bool $getShared
-	 *
-	 * @return \Myth\Auth\Authenticate\LocalAuthentication
-	 */
-	public static function authentication(bool $getShared = true)
+    public static function honeypot(BaseConfig $config = null, $getShared = true)
+    {
+        if ($getShared)
+        {
+            return self::getSharedInstance('honeypot', $config);
+        }
+
+        if (is_null($config))
+        {
+            $config = new \Config\Honeypot();
+        }
+
+        return new \CodeIgniter\Honeypot\Honeypot($config);
+    }
+
+	public static function authentication(string $lib = 'local', Model $userModel=null, Model $loginModel=null, bool $getShared = true)
 	{
 		if ($getShared)
 		{
-			return self::getSharedInstance('authentication');
+			return self::getSharedInstance('authentication', $lib, $userModel, $loginModel);
 		}
 
-		return new LocalAuthentication(new Auth(), new UserManager(), new LoginModel());
+		$config = config(Auth::class);
+
+		$class = $config->authenticationLibs[$lib];
+
+		$instance = new $class($config);
+
+		if (empty($userModel))
+		{
+			$userModel = new UserModel();
+		}
+
+		if (empty($loginModel))
+		{
+			$loginModel = new LoginModel();
+		}
+
+		return $instance
+			->setUserModel($userModel)
+			->setLoginModel($loginModel);
 	}
 
-	/**
-	 * Return the Authorization library.
-	 *
-	 * @param bool $getShared
-	 *
-	 * @return \Myth\Auth\Authorize\FlatAuthorization
-	 */
-	public static function authorization(bool $getShared=true)
+	public static function authorization(Model $groupModel=null, Model $permissionModel=null, Model $userModel=null, bool $getShared = true)
 	{
 		if ($getShared)
 		{
-			return self::getSharedInstance('authorization');
+			return self::getSharedInstance('authorization', $groupModel, $permissionModel);
 		}
 
-		return new FlatAuthorization(new FlatGroupsModel(), new FlatPermissionsModel());
+		if (is_null($groupModel))
+		{
+			$groupModel = new GroupModel();
+		}
+
+		if (is_null($permissionModel))
+		{
+			$permissionModel = new PermissionModel();
+		}
+
+		$instance = new FlatAuthorization($groupModel, $permissionModel);
+
+		if (is_null($userModel))
+		{
+			$userModel = new UserModel();
+		}
+
+		return $instance->setUserModel($userModel);
 	}
+
+	/**
+	 * Returns an instance of the password validator.
+	 *
+	 * @param null $config
+	 * @param bool $getShared
+	 *
+	 * @return mixed|PasswordValidator
+	 */
+	public static function passwords($config = null, bool $getShared = true)
+	{
+		if ($getShared)
+		{
+			return self::getSharedInstance('passwords', $config);
+		}
+
+		if (empty($config))
+		{
+			$config = config(Auth::class);
+		}
+
+		return new PasswordValidator($config);
+	}
+
 }

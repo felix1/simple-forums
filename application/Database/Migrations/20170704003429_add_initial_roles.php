@@ -2,13 +2,13 @@
 
 use CodeIgniter\Database\Migration;
 use Config\Services;
-use Myth\Auth\Authorize\FlatGroupsModel;
+use Myth\Auth\Authorization\GroupModel;
 
 class Migration_add_initial_roles extends Migration
 {
 	public function up()
 	{
-		$auth = new FlatGroupsModel();
+		$auth = new GroupModel();
 		$auth->skipValidation(true);
 
 		$auth->insert(['name' => 'admins', 'description' => 'Site Administrators']);

@@ -31,7 +31,7 @@ class ForumControllerTest extends CIDatabaseTestCase
 
 		$this->assertTrue($result->isOK());
 
-		$this->assertTrue(strpos($result->response()->getBody(), 'Some Forums') !== false);
+		$this->assertTrue($result->see('Some Forums'));
 	}
 
 
