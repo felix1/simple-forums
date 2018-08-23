@@ -19,6 +19,41 @@ class Entity extends \CodeIgniter\Entity
 	protected $relatives = [];
 
 	/**
+	 * Overrides the toArray class method and adds
+	 * in any relationships that have been loaded
+	 * so they are available within the array.
+	 *
+	 * @return array
+	 */
+	public function toArray(): array
+	{
+		$return = parent::toArray();
+
+		foreach ($this->relatives as $name => $relatives)
+		{
+			$objects = $this->{$name};
+
+			if (! count($objects))
+			{
+				$return[$name] = null;
+			}
+
+			$temp = [];
+
+			foreach ($objects as $object)
+			{
+				$temp[] = $object->toArray();
+			}
+
+			$return[$name] = $temp;
+		}
+
+		return $return;
+	}
+
+	//--------------------------------------------------------------------
+
+	/**
 	 * Override the core getter to add relationship detection features.
 	 *
 	 * @param string $key

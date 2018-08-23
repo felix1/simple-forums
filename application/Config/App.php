@@ -318,5 +318,6 @@ class App extends BaseConfig
 
 	//--------------------------------------------------------------------
 
+	public $toolbarMaxHistory = 5;
 
 }
