@@ -31,6 +31,13 @@ class BaseController extends Controller
 	 */
 	protected $message;
 
+	/**
+	 * Scripts to load into the theme at the end of the page.
+	 *
+	 * @var array
+	 */
+	protected $scripts = [];
+
 	//--------------------------------------------------------------------
 
 	public function __construct()
@@ -64,6 +71,7 @@ class BaseController extends Controller
 		$data['authenticate'] = $this->authenticate;
 		$data['authorize']    = $this->authorize;
 		$data['current_user'] = $this->authenticate->user();
+		$data['scripts']      = $this->scripts;
 
 		$content = $this->renderView($view, $data, ['saveData' => true]);
 
@@ -90,7 +98,7 @@ class BaseController extends Controller
 		$saveData = null;
 		if (array_key_exists('saveData', $options) && $options['saveData'] === true)
 		{
-			$saveData = (bool) $options['saveData'];
+			$saveData = (bool)$options['saveData'];
 			unset($options['saveData']);
 		}
 
@@ -110,7 +118,7 @@ class BaseController extends Controller
 	 * @param string $message The message to save.
 	 * @param string $type    The string to be included as the CSS class of the containing div.
 	 */
-	public function setMessage($message = '', $type = 'info')
+	protected function setMessage($message = '', $type = 'info')
 	{
 		if (! empty($message))
 		{
@@ -136,7 +144,7 @@ class BaseController extends Controller
 	 *
 	 * @return array
 	 */
-	public function message(string $message = '', string $type = 'info'): array
+	protected function message(string $message = '', string $type = 'info'): array
 	{
 		$return = [
 			'message' => $message,

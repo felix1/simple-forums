@@ -128,6 +128,6 @@ class Services extends CoreServices
 			$config = new \Config\View();
 		}
 
-		return new \CodeIgniter\View\View($config, $viewPath, self::locator(true), CI_DEBUG, self::logger(true));
+		return new \App\Domains\Views\ThemedView($config, $viewPath, self::locator(true), CI_DEBUG, self::logger(true));
 	}
 }

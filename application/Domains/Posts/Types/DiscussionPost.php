@@ -1,4 +1,4 @@
-<?php namespace App\Domains\Posts\Discussion;
+<?php namespace App\Domains\Posts\Types;
 
 use App\Domains\Posts\Post;
 
