@@ -35,7 +35,7 @@ class BaseController extends Controller
 
 	public function __construct()
 	{
-		$this->renderer = Services::renderer(ROOTPATH."themes/{$this->theme}/");
+		$this->renderer = Services::renderer(ROOTPATH."themes/{$this->theme}/", null, true);
 	}
 
 	public function setData(array $data)

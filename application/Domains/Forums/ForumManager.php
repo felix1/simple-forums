@@ -56,7 +56,7 @@ class ForumManager extends EntityManager
 	 */
 	public function findCategories()
 	{
-		return $this->findWhere('is_category', 1);
+		return $this->where('is_category', 1)->findAll();
 	}
 
 }

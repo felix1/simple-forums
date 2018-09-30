@@ -8,7 +8,7 @@ use Myth\Auth\Authorization\FlatAuthorization;
 use Myth\Auth\Authorization\GroupModel;
 use Myth\Auth\Config\Auth;
 use Myth\Auth\Models\LoginModel;
-use Myth\Authorization\PermissionModel;
+use Myth\Auth\Authorization\PermissionModel;
 
 require_once BASEPATH.'Config/Services.php';
 
@@ -27,21 +27,6 @@ require_once BASEPATH.'Config/Services.php';
  */
 class Services extends CoreServices
 {
-    public static function honeypot(BaseConfig $config = null, $getShared = true)
-    {
-        if ($getShared)
-        {
-            return self::getSharedInstance('honeypot', $config);
-        }
-
-        if (is_null($config))
-        {
-            $config = new \Config\Honeypot();
-        }
-
-        return new \CodeIgniter\Honeypot\Honeypot($config);
-    }
-
 	public static function authentication(string $lib = 'local', Model $userModel=null, Model $loginModel=null, bool $getShared = true)
 	{
 		if ($getShared)
@@ -74,7 +59,7 @@ class Services extends CoreServices
 	{
 		if ($getShared)
 		{
-			return self::getSharedInstance('authorization', $groupModel, $permissionModel);
+			return self::getSharedInstance('authorization', $groupModel, $permissionModel, $userModel);
 		}
 
 		if (is_null($groupModel))
@@ -120,4 +105,29 @@ class Services extends CoreServices
 		return new PasswordValidator($config);
 	}
 
+	/**
+	 * The Renderer class is the class that actually displays a file to the user.
+	 * The default View class within CodeIgniter is intentionally simple, but this
+	 * service could easily be replaced by a template engine if the user needed to.
+	 *
+	 * @param string $viewPath
+	 * @param mixed  $config
+	 * @param bool   $getShared
+	 *
+	 * @return \CodeIgniter\View\View
+	 */
+	public static function renderer($viewPath = ROOTPATH.'themes/default/', $config = null, bool $getShared = true)
+	{
+		if ($getShared)
+		{
+			return self::getSharedInstance('renderer', $viewPath, $config);
+		}
+
+		if (is_null($config))
+		{
+			$config = new \Config\View();
+		}
+
+		return new \CodeIgniter\View\View($config, $viewPath, self::locator(true), CI_DEBUG, self::logger(true));
+	}
 }

@@ -3,11 +3,14 @@
 use App\Domains\Forums\ForumManager;
 use App\Domains\Forums\ThreadManager;
 use App\Domains\Posts\PostManager;
-use CodeIgniter\PageNotFoundException;
 use Config\Services;
+use Myth\Auth\Authorization\PermissionModel;
+use Myth\Auth\AuthTrait;
 
 class ForumController extends BaseController
 {
+	use AuthTrait;
+
 	/**
 	 * @var \App\Domains\Forums\ForumManager
 	 */
@@ -18,10 +21,10 @@ class ForumController extends BaseController
 	 */
 	protected $threads;
 
-	public function __construct(...$params)
+	public function __construct()
 	{
-		parent::__construct(...$params);
-
+		parent::__construct();
+$this->setupAuthClasses();
 		$this->forums = new ForumManager();
 		$this->threads = new ThreadManager();
 	}
@@ -31,7 +34,6 @@ class ForumController extends BaseController
 	 */
 	public function showCategories()
 	{
-//		throw new PageNotFoundException();
 		helper('typography');
 
 		$categories = $this->forums

@@ -48,4 +48,4 @@
     <?php endforeach ?>
 </div>
 
-<?//= $pager->links() ?>
+<?php if ($pager) $pager->links() ?>

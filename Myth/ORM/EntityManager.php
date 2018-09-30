@@ -12,16 +12,16 @@ class EntityManager extends Model
 
 	/**
 	 * Stores the relationships for this model.
-	 * 
+	 *
 	 * @var array
 	 */
 	protected $relationships = [];
 
 	protected $eagerLoad;
 
-	public function __construct(...$params)
+	public function __construct()
 	{
-		parent::__construct(...$params);
+		parent::__construct();
 
 		// Will need this for determining keys and aliases for relations
 		helper('inflector');

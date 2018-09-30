@@ -7,7 +7,7 @@ use Config\Services;
 use Myth\Auth\Entities\User;
 use App\Domains\Users\UserModel;
 
-class AuthController extends Controller
+class AuthController extends BaseController
 {
     protected $auth;
     /**

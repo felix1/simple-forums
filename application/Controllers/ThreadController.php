@@ -2,7 +2,7 @@
 
 use App\Domains\Forums\ThreadManager;
 use App\Domains\Posts\PostManager;
-use CodeIgniter\PageNotFoundException;
+use CodeIgniter\Exceptions\PageNotFoundException;
 
 class ThreadController extends BaseController
 {
@@ -32,7 +32,7 @@ class ThreadController extends BaseController
 			throw new PageNotFoundException();
 		}
 
-		$postModel   = new PostManager();
+		$postModel = new PostManager();
 
 		$thread = $this->threadModel->find($threadID);
 		$thread->setPostModel($postModel);
@@ -40,7 +40,7 @@ class ThreadController extends BaseController
 
 		$this->render('threads/show', [
 			'thread' => $thread,
-			'pager' => $postModel->pager
+			'pager'  => $postModel->pager,
 		]);
 	}
 

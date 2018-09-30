@@ -9,7 +9,9 @@ class Filters extends BaseConfig
 	public $aliases = [
 		'csrf' 	  => \App\Filters\CSRF::class,
 		'toolbar' => \App\Filters\DebugToolbar::class,
-		'honeypot' => \App\Filters\Honeypot::class
+		'honeypot' => \App\Filters\Honeypot::class,
+		'role' => \Myth\Auth\Filters\RoleFilter::class,
+		'permission' => \Myth\Auth\Filters\PermissionFilter::class,
 	];
 
 	// Always applied before every request
