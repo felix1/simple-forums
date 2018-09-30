@@ -101,7 +101,7 @@ $routes->get('categories', 'ForumController::showCategories');
 $routes->get('recent', 'ForumController::showRecent');
 $routes->get('forums/(:segment)', 'ForumController::showForum/$1', ['as' => 'forumLink']);
 $routes->get('topic/(:segment)', 'ThreadController::show/$1', ['as' => 'threadLink']);
-$routes->get('forums/(:num)/new_post', 'PostController::newPost/$1', ['as' => 'newPost']);
+$routes->get('forums/(:num)/new-post', 'PostController::newPost/$1', ['as' => 'newPost']);
 
 
 /*

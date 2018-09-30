@@ -9,7 +9,7 @@ use App\Domains\Posts\Post;
  *
  * @package App\Domains\Posts
  */
-class DiscussionPost extends Post
+class QuestionPost extends Post
 {
 	/**
 	 * Icon type used to determine icon displayed

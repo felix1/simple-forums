@@ -50,13 +50,6 @@ class Post extends Entity
 	protected $iconClass = 'post-discussion-icon';
 
 	/**
-	 * The name of the post type stored with each post in the db.
-	 *
-	 * @var string
-	 */
-	protected $typeSlug;
-
-	/**
 	 * The "namespaced" view that should be displayed
 	 * for the form.
 	 *
@@ -85,4 +78,15 @@ class Post extends Entity
 		]);
 	}
 
+	/**
+	 * Displays the form for this post.
+	 *
+	 * @return string
+	 */
+	public function displayForm()
+	{
+		return view($this->formView, [
+			'post' => $this
+		]);
+	}
 }

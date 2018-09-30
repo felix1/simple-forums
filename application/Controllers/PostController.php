@@ -1,5 +1,7 @@
 <?php namespace App\Controllers;
 
+use Config\Forums;
+
 class PostController extends BaseController
 {
 
@@ -10,7 +12,19 @@ class PostController extends BaseController
 	 */
 	public function newPost(int $forumID)
 	{
-		$this->render('posts/form');
+		$config = new Forums();
+		$type = $this->request->getGetPost('type');
+
+		$typeObject = ! empty($type)
+			? $typeObject = $config->postFactory($type)
+			: null;
+
+
+		$this->render('posts/form', [
+			'type' => $type,
+			'types' => $config->postTypes,
+			'typeObject' => $typeObject,
+		]);
 	}
 
 }
