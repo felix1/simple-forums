@@ -1,5 +1,6 @@
 <?php namespace App\Controllers;
 
+use App\Domains\Views\Theme;
 use CodeIgniter\Controller;
 use Config\Services;
 use Myth\Auth\AuthTrait;
@@ -14,10 +15,6 @@ class BaseController extends Controller
 	 * @var array
 	 */
 	protected $data = [];
-
-	protected $theme = 'default';
-
-	protected $layout = 'master';
 
 	/**
 	 * @var \CodeIgniter\View\View
@@ -42,7 +39,7 @@ class BaseController extends Controller
 
 	public function __construct()
 	{
-		$this->renderer = Services::renderer(ROOTPATH."themes/{$this->theme}/", null, true);
+		$this->renderer = Services::renderer(Theme::path(), null, true);
 	}
 
 	public function setData(array $data)
@@ -75,7 +72,7 @@ class BaseController extends Controller
 
 		$content = $this->renderView($view, $data, ['saveData' => true]);
 
-		$layout = $this->renderView('layouts/'.$this->layout, $data, ['saveData' => true]);
+		$layout = $this->renderView('layouts/'.Theme::layout(), $data, ['saveData' => true]);
 		$layout = str_replace('{content}', $content, $layout);
 
 		echo $layout;

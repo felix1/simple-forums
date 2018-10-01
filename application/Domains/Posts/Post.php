@@ -1,6 +1,7 @@
 <?php namespace App\Domains\Posts;
 
 use CodeIgniter\Entity;
+use App\Domains\Views\Theme;
 
 /**
 * A Post is a single person's part of the conversation.
@@ -73,7 +74,7 @@ class Post extends Entity
 	 */
 	public function display()
 	{
-		return view($this->displayView, [
+		return Theme::view($this->displayView, [
 			'post' => $this
 		]);
 	}
@@ -85,7 +86,7 @@ class Post extends Entity
 	 */
 	public function displayForm()
 	{
-		return view($this->formView, [
+		return Theme::view($this->formView, [
 			'post' => $this
 		]);
 	}

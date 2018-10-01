@@ -32,12 +32,12 @@ class DiscussionPost extends Post
 	 *
 	 * @var string
 	 */
-	protected $formView = '';
+	protected $formView = 'posts/discussion_form';
 
 	/**
 	 * The name of the view used to display the initial post in a thread.
 	 *
 	 * @var string
 	 */
-	protected $displayView = '';
+	protected $displayView = 'post/discussion_view';
 }
