@@ -40,6 +40,7 @@ class BaseController extends Controller
 	public function __construct()
 	{
 		$this->renderer = Services::renderer(Theme::path(), null, true);
+		$this->setupAuthClasses();
 	}
 
 	public function setData(array $data)

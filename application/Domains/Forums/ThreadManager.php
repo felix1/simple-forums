@@ -25,17 +25,12 @@ class ThreadManager extends EntityManager
 	protected $dateFormat    = 'datetime';
 
 	protected $validationRules    = [
-		'id'         => 'integer|max_length[11]',
 		'user_id'    => 'integer|max_length[11]',
 		'forum_id'   => 'integer|max_length[5]',
-		'title'      => 'alpha_numeric_spaces|max_length[255]',
+		'title'      => 'max_length[255]',
 		'first_post' => 'integer|max_length[11]',
-		'views'      => 'integer|max_length[20]',
-		'posts'      => 'integer|max_length[11]',
-		'created_at' => '',
-		'updated_at' => '',
-		'deleted_at' => '',
-
+		'view_count' => 'integer|max_length[20]',
+		'post_count' => 'integer|max_length[11]',
 	];
 	protected $validationMessages = [];
 	protected $skipValidation     = false;

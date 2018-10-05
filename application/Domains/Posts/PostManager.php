@@ -17,7 +17,7 @@ class PostManager extends EntityManager
 	protected $returnType     = 'App\Domains\Posts\Post';
 	protected $useSoftDeletes = false;
 
-	protected $allowedFields = ['forum_id', 'thread_id', 'user_id', 'type', 'title', 'body', 'html', 'deleted_at'];
+	protected $allowedFields = ['forum_id', 'thread_id', 'user_id', 'type', 'title', 'body', 'html', 'deleted_at', 'markup'];
 
 	protected $useTimestamps = true;
 	protected $createdField  = 'created_at';
@@ -25,16 +25,13 @@ class PostManager extends EntityManager
 	protected $dateFormat    = 'datetime';
 
 	protected $validationRules    = [
-		'id'         => 'integer|max_length[11]',
-		'forum_id'   => 'integer|max_length[5]',
+		'forum_id'   => 'required|integer|max_length[5]',
 		'thread_id'  => 'integer|max_length[11]',
-		'user_id'    => 'integer|max_length[11]',
-		'title'      => 'alpha_numeric_spaces|max_length[255]',
-		'body'       => '',
-		'created_at' => '',
-		'updated_at' => '',
-		'deleted_at' => '',
-
+		'user_id'    => 'required|integer|max_length[11]',
+		'title'      => 'required|max_length[255]',
+		'body'       => 'required',
+		'type'       => 'required',
+		'markup'     => 'required'
 	];
 	protected $validationMessages = [];
 	protected $skipValidation     = false;

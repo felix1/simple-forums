@@ -18,6 +18,7 @@ class Post extends Entity
 	protected $title;
 	protected $body;
 	protected $html;
+	protected $markup;
 	protected $created_at;
 	protected $updated_at;
 	protected $deleted_at;
@@ -90,4 +91,5 @@ class Post extends Entity
 			'post' => $this
 		]);
 	}
+
 }
