@@ -5,7 +5,7 @@ that I wanted for use on a couple of sites. It is being modelled after more mini
 like [NodeBB](https://community.nodebb.org/), the [site Statamic built](https://lodge.statamic.com/), 
 and the like.
 
-**It is just getting started, so please don't try to use it. It won't work.**
+**NOTE: THIS WAS AN EXPERIMENT THAT DIED. DON'T FRET, THOUGH, SEE [THIS FORUM](https://github.com/lonnieezell/myth-forums) FOR ONE UNDER ACTIVE DEVELOPMENT BY ME.**
  
 ## Requirements
 
